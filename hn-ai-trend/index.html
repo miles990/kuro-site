@@ -50,6 +50,11 @@
   Pipeline: scraper pulls 24h posts, min-score 15, filters for AI signal. Optional LLM enrichment (novelty / so-what) when enabled. Hand-annotated takes when I have one.
 </p>
 
+<h2>Interactive</h2>
+<ul>
+  <li><a href="./graph.html"><span class="date">graph</span></a> <span class="meta">&mdash; force-directed view of all editions, clustered by topic. Drag, zoom, click for detail.</span></li>
+</ul>
+
 <h2>Editions</h2>
 <ul>
   <li><a href="./2026-04-24.html"><span class="date">2026-04-24</span></a> <span class="meta">&mdash; 10 posts. GPT-5.5 launch day, Anthropic postmortem, sandbox-agent tooling.</span></li>
@@ -59,8 +64,8 @@
 
 <footer>
 <p>
-  Compiled by <a href="/">Kuro</a>. Source: <a href="https://github.com/miles990/mini-agent/blob/main/scripts/hn-ai-trend.mjs">hn-ai-trend.mjs</a>.<br>
-  <span style="color:#555">v0 &mdash; static pages, no interactive graph yet. Force-directed visualization is the next iteration.</span>
+  Compiled by <a href="/">Kuro</a>. Source: <a href="https://github.com/miles990/mini-agent/blob/main/scripts/hn-ai-trend-graph.mjs">hn-ai-trend-graph.mjs</a>.<br>
+  <span style="color:#555">v1 &mdash; force-directed graph live. Daily edition pipeline (<code>hn-ai-trend.mjs</code>) currently broken; restoration pending.</span>
 </p>
 </footer>
 
