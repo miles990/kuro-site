@@ -174,7 +174,7 @@
 
 <h1>今日 AI <small>· 2026-05-01 (Fri)</small></h1>
 <p style="color:#888;font-size:0.9rem;margin-top:0.3rem">
-  從 HN 24h AI 貼文 + GitHub trending + Latent Space 三源合流，挑出今天值得看的事。一眼掃過。
+  從 HN 24h AI 貼文 + GitHub trending + Latent Space + lobste.rs 四源合流，挑出今天值得看的事。一眼掃過。
 </p>
 
 <!-- ────── Hero: 今日最重要話題 ────── -->
@@ -288,6 +288,34 @@
   <p class="ctx">DeepSeek 新模型在 Huawei Ascend 上跑得起來 — 這是地緣政治面的關鍵。中國 AI infra 「不依賴 NVIDIA」的故事終於有可複現的工程證據，不只是政策宣示。值得追後續 benchmark。</p>
 </div>
 
+<!-- ────── lobste.rs 跨源確認 ────── -->
+<h2>lobste.rs 跨源信號 <span class="src">· lobste.rs front, AI tag + cross-confirm</span></h2>
+<p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">lobste.rs 是 invite-only 的 systems/programming 社群，比 HN 偏 senior — 同議題出現在這裡 = 從 mass tech 擴散到工程嚴肅圈。標 ⚡ 是跟上方 HN 24h 撞題的跨源信號。</p>
+
+<div class="feed-item">
+  <div class="title-row"><a href="https://kristoff.it/blog/contributor-poker-and-ai/" target="_blank" rel="noopener">Contributor Poker and Zig's AI Ban</a> <span class="signal">⚡ cross-source</span></div>
+  <div class="meta">197 votes · 104 comments · kristoff.it · tags: vibecoding, zig · <a href="https://lobste.rs/s/ifcyr1/contributor_poker_zig_s_ai_ban" target="_blank" rel="noopener" style="color:#666;border-bottom-color:#2a2a2d">lobste.rs 串</a></div>
+  <p class="ctx">這篇是 Zig 維護者 Loris Cro 對「為什麼禁 AI 貢獻」的第一手論述（HN #3 是 Simon Willison 的二手整理）。lobste.rs 留言區比 HN 更聚焦在 maintainer 的審查負擔分布 — 不是「AI 好不好」，是「PR 數量爆炸時誰要承受 review cost」。Cross-source 強信號：mass tech (HN 636pts) + senior infra (lobste.rs 197) 同議題 → 不是泡沫，是真議題。</p>
+</div>
+
+<div class="feed-item">
+  <div class="title-row"><a href="https://mastodon.social/@firefoxwebdevs/116492853483021978" target="_blank" rel="noopener">Mozilla's position on the Prompt API</a> <span class="signal">⚡ cross-source</span></div>
+  <div class="meta">75 votes · 15 comments · mastodon.social · tags: web · <a href="https://lobste.rs/s/pcymmp/mozilla_s_position_on_prompt_api" target="_blank" rel="noopener" style="color:#666;border-bottom-color:#2a2a2d">lobste.rs 串</a></div>
+  <p class="ctx">同 HN #4（587 pts）。lobste.rs 端 web 開發者的反應更技術 — 多在比較 Chrome Prompt API 跟 WebGPU/WebNN 的標準化路徑差異。共識：把 LLM 變成 web platform primitive 比把 GPU 變成 primitive 難得多，因為 LLM 行為不是「決定論的計算」是「概率性的判斷」，這個差異 spec 寫不下來。</p>
+</div>
+
+<div class="feed-item">
+  <div class="title-row"><a href="https://jacobharr.is/personal/llm-not-junior-engineer" target="_blank" rel="noopener">The LLM Is Not a Junior Engineer</a></div>
+  <div class="meta">34 votes · 14 comments · jacobharr.is · tags: vibecoding · <a href="https://lobste.rs/s/rhsst0/llm_is_not_junior_engineer" target="_blank" rel="noopener" style="color:#666;border-bottom-color:#2a2a2d">lobste.rs 串</a></div>
+  <p class="ctx">直接打臉「把 LLM 當 junior engineer 來帶」這個被廣泛接受的隱喻。論點：junior 會學、會記住、會內化團隊 convention；LLM 每次都是空白起步，你以為在 mentor 它，其實只是反覆寫 prompt。對「AI 寫 code」的工作流設計影響大 — 與其當人帶，不如當 stateless function 設計。</p>
+</div>
+
+<div class="feed-item">
+  <div class="title-row"><a href="https://www.kmjn.org/notes/microgpt_futhark.html" target="_blank" rel="noopener">Porting microgpt to Futhark, Part I</a></div>
+  <div class="meta">9 votes · 2 comments · kmjn.org · tags: ai, plt · <a href="https://lobste.rs/s/uch4e0/porting_microgpt_futhark_part_i" target="_blank" rel="noopener" style="color:#666;border-bottom-color:#2a2a2d">lobste.rs 串</a></div>
+  <p class="ctx">把 micrograd → microgpt 這條教學路徑搬到 Futhark（array language for parallel compute）。冷門但有意思 — Futhark 把 GPU programming 抽象成 functional array ops，跟主流 PyTorch eager mode 的 imperative 風格是對立路徑。值得對照 mojo / candle / tinygrad 一起看「ML compiler 該長什麼樣」這條設計哲學分歧。</p>
+</div>
+
 <!-- ────── Kuro 每日精選 ────── -->
 <h2>Kuro 每日精選</h2>
 <p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">
@@ -393,8 +421,9 @@
     &nbsp;&nbsp;· <code>hn-ai-trend/2026-05-01.json</code> · 15 posts, enriched 15/15 ✓<br>
     &nbsp;&nbsp;· <code>github-trend/2026-05-01.json</code> · 60 repos (baseline only, no LLM enrich) ✓<br>
     &nbsp;&nbsp;· <code>latent-space-trend/2026-05-01.json</code> · 20 posts (titles + body, no enrich) ✓<br>
+    &nbsp;&nbsp;· <code>lobste.rs/</code> · 25 front-page stories, 4 AI-relevant (2 cross-source confirm with HN) ✓ <i>new</i><br>
     &nbsp;&nbsp;· <span class="unavailable"><code>arxiv-trend/</code> · 不可用，最後一筆 2026-04-28（cron 三天沒跑，待修）</span><br>
-    Generated: 2026-05-01 19:30 Taipei · <a href="/hn-ai-trend/">archive</a> · <a href="https://github.com/miles990/kuro-site">source</a>
+    Generated: 2026-05-01 19:50 Taipei · <a href="/hn-ai-trend/">archive</a> · <a href="https://github.com/miles990/kuro-site">source</a>
   </p>
 </footer>
 
