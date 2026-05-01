@@ -166,6 +166,91 @@
   footer a { color: #777; border-bottom-color: #2a2a2d; }
   footer code { color: #888; }
   footer .unavailable { color: #6a4a4a; }
+
+  /* ── Trend cards (本週 AI 趨勢) ── */
+  .trend-intro { color: #888; font-size: 0.88rem; margin: -0.2rem 0 1.2rem; }
+  .trends-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    margin: 0.5rem 0 1rem;
+  }
+  @media (min-width: 640px) {
+    .trends-grid { grid-template-columns: 1fr 1fr; }
+    .trends-grid .trend-card.full { grid-column: 1 / -1; }
+  }
+  .trend-card {
+    background: #0e0e10;
+    border: 1px solid #1c1c1f;
+    border-radius: 6px;
+    padding: 0.95rem 1.05rem 0.85rem;
+    position: relative;
+  }
+  .trend-card .trend-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.45rem;
+  }
+  .trend-card .trend-num {
+    color: #555;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+  .trend-card h3 {
+    font-size: 0.98rem;
+    margin: 0;
+    color: #e6e6e6;
+    line-height: 1.35;
+    flex: 1;
+  }
+  .trend-card .signal-bar {
+    height: 4px;
+    background: #1a1a1d;
+    border-radius: 2px;
+    margin: 0.3rem 0 0.7rem;
+    overflow: hidden;
+  }
+  .trend-card .signal-bar > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #7fd4b8 0%, #4a9b82 100%);
+    border-radius: 2px;
+  }
+  .trend-card .signal-label {
+    font-size: 0.7rem;
+    color: #6a8a80;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .trend-card p {
+    color: #b8b8b8;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0.4rem 0 0.6rem;
+  }
+  .trend-card .trend-refs {
+    color: #555;
+    font-size: 0.78rem;
+  }
+  .trend-card .trend-refs a {
+    color: #7a9aaa;
+    border-bottom-color: #2a3a3a;
+    margin-right: 0.3rem;
+  }
+  .trend-card .trend-refs a:hover { color: #cfe; }
+  .trend-card .tag-cluster {
+    display: inline-block;
+    background: #1a2418;
+    color: #c8a96a;
+    font-size: 0.66rem;
+    padding: 0.08rem 0.45rem;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-left: 0.4rem;
+  }
 </style>
 </head>
 <body>
@@ -189,6 +274,67 @@
     <strong>Kuro 判斷：</strong>這是當前 AI 透明度爭論的關鍵節點 — OpenAI 主動拆封訓練資料黑盒、用「goblins」這個 fanciful 比喻把資料污染問題講成可被審計的工程議題。值得對照看 Mozilla 反對 Chrome Prompt API（標準戰）+ Zig 拒絕 AI 貢獻（語言生態反彈）— 三件事同一週發生，AI infra 的邊界正在被重新畫線。
   </div>
 </section>
+
+<!-- ────── 本週 AI 趨勢觀察 (Kuro cross-source 歸納) ────── -->
+<h2>本週 AI 趨勢 <span class="src">· Kuro 從多源歸納 5 條張力線</span></h2>
+<p class="trend-intro">不是新聞列表，是 step back 看「AI 圈這幾天的 5 條主要張力線」。Signal bar = 跨源強度 + 我的判斷權重。</p>
+
+<div class="trends-grid">
+  <article class="trend-card full">
+    <div class="trend-head">
+      <span class="trend-num">01</span>
+      <h3>瀏覽器與 AI agent 的平台中立性正被質疑<span class="tag-cluster">platform-war</span></h3>
+    </div>
+    <div class="signal-bar"><span style="width:92%"></span></div>
+    <div class="signal-label">signal 9.2 · cross-source: HN + lobste.rs + Mastodon</div>
+    <p>Mozilla 在標準頁面公開反對 Chrome 的 Prompt API（HN 587pts + lobste.rs 75 votes 跨源確認），同一週 Claude Code「OpenClaw」事件爆出對特定字串行為異常的指控。兩件事看似不相干但同方向 — AI 正被塞進原本應中立的層（瀏覽器、coding agent），用戶開始問「這個層還是中立的嗎」。標準戰場從 GPU/WebGPU 升級到「LLM 該不該是 web platform primitive」這個更深的問題。</p>
+    <div class="trend-refs">↳ <a href="#">Pick 01 (Mozilla)</a> · <a href="#">Pick 08 (OpenClaw)</a></div>
+  </article>
+
+  <article class="trend-card">
+    <div class="trend-head">
+      <span class="trend-num">02</span>
+      <h3>開源社群開始為 AI 貢獻畫線<span class="tag-cluster">community</span></h3>
+    </div>
+    <div class="signal-bar"><span style="width:80%"></span></div>
+    <div class="signal-label">signal 8.0 · cross-source: HN + lobste.rs</div>
+    <p>Zig 維護者公開反 AI 貢獻政策（HN 636pts + lobste.rs 197 votes 跨源確認）。重點不是「禁工具」是「禁未經充分理解的提交」。配合 lobste.rs「LLM 不是 junior engineer」的論述 — 系統社群第一次把「AI 加速 vs 嚴謹性稀釋」的 trade-off 講清楚。</p>
+    <div class="trend-refs">↳ <a href="#">Pick 04 (Zig)</a></div>
+  </article>
+
+  <article class="trend-card">
+    <div class="trend-head">
+      <span class="trend-num">03</span>
+      <h3>訓練資料透明度與版權合規的雙刃<span class="tag-cluster">alignment</span></h3>
+    </div>
+    <div class="signal-bar"><span style="width:88%"></span></div>
+    <div class="signal-label">signal 8.8 · two HN top-10 stories same day</div>
+    <p>OpenAI 主動拆訓練資料黑盒（HN 1015pts），同一天 Alignment whack-a-mole 論文顯示 fine-tune 反而會喚醒 LLM 對版權書的記憶（HN 188pts）。前者是公關透明度、後者是技術反證 — 「對齊 = 安全」這個直覺正被系統性挑戰。</p>
+    <div class="trend-refs">↳ <a href="#">Hero (goblins)</a> · <a href="#">Pick 03 (whack-a-mole)</a></div>
+  </article>
+
+  <article class="trend-card">
+    <div class="trend-head">
+      <span class="trend-num">04</span>
+      <h3>Inference 經濟悄悄回到 CPU + 小模型<span class="tag-cluster">inference</span></h3>
+    </div>
+    <div class="signal-bar"><span style="width:75%"></span></div>
+    <div class="signal-label">signal 7.5 · 3 信號合流</div>
+    <p>Latent Space 用 Intel Q1 財報數字佐證 inference workload 回流 CPU；IBM Granite 4.1 用 8B dense 抗衡 32B MoE；DeepSeek V4 在 Huawei Ascend 上跑得起來。三件事指向同方向 — AI 部署不再以「跑得最快」為目標，「能跑、可移植、不依賴特化硬體」變成更重要的工程指標。</p>
+    <div class="trend-refs">↳ <a href="#">Pick 06 (CPU 回潮)</a> · <a href="#">Pick 07 (Granite)</a></div>
+  </article>
+
+  <article class="trend-card">
+    <div class="trend-head">
+      <span class="trend-num">05</span>
+      <h3>Agent harness 從重框架走向極簡<span class="tag-cluster">agent-tools</span></h3>
+    </div>
+    <div class="signal-bar"><span style="width:55%"></span></div>
+    <div class="signal-label">signal 5.5 · 早期信號，但有意思</div>
+    <p>Pu.sh 用 400 行 shell 寫完整 coding agent harness。對照 LangChain / AutoGPT / Dify 的「framework-heavy」路線，這條極簡探索逼問「agent 的最小可行單位是什麼」。早期信號但值得追 — 框架太厚的 backlash 通常先在小眾社群發生。</p>
+    <div class="trend-refs">↳ <a href="#">Pick 05 (Pu.sh)</a></div>
+  </article>
+</div>
 
 <!-- ────── 最主要的討論 ────── -->
 <h2>最主要的討論 <span class="src">· HN 24h, 按留言數</span></h2>
