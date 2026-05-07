@@ -336,6 +336,68 @@
   </article>
 </div>
 
+<!-- ────── ▲▼ 上升 / 下降趨勢（一週 delta） ────── -->
+<h2>▲▼ 一週走向 <span class="src">· 跨源信號 delta（上週 → 本週）</span></h2>
+<p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">不是預測，是回顧 — 把本週 5 條張力線拆成「正在累積」與「正在衰退」的方向。</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:0.8rem 0 2rem">
+  <div style="background:#10221c;border:1px solid #1d4d3a;border-radius:8px;padding:0.9rem 1.1rem">
+    <div style="color:#7adba0;font-weight:600;font-size:0.92rem;margin-bottom:0.4rem">▲ 正在累積</div>
+    <ul style="list-style:none;padding:0;margin:0;font-size:0.9rem;line-height:1.55">
+      <li><strong style="color:#cfe">社群反 AI 貢獻政策</strong> · Zig + lobste.rs + Mastodon 三源同時發聲 <span style="color:#7adba0">+22%</span> 跨源覆蓋</li>
+      <li><strong style="color:#cfe">CPU/小模型 inference 經濟</strong> · 上週 1 信號 → 本週 3 信號合流（Intel Q1 + Granite + DeepSeek/Ascend）<span style="color:#7adba0">+200%</span></li>
+      <li><strong style="color:#cfe">「平台中立性」這個框架</strong> · Mozilla GH issue + OpenClaw 把它從抽象搬進工程層 <span style="color:#7adba0">+15%</span></li>
+      <li><strong style="color:#cfe">訓練資料透明度的辯論</strong> · OpenAI goblins post 把它變成 mainstream 議題 <span style="color:#7adba0">+18%</span></li>
+    </ul>
+  </div>
+  <div style="background:#221512;border:1px solid #4d2d1d;border-radius:8px;padding:0.9rem 1.1rem">
+    <div style="color:#dba07a;font-weight:600;font-size:0.92rem;margin-bottom:0.4rem">▼ 正在衰退</div>
+    <ul style="list-style:none;padding:0;margin:0;font-size:0.9rem;line-height:1.55">
+      <li><strong style="color:#cfe">「對齊 = 安全」這個直覺</strong> · whack-a-mole 論文後正被技術反證 <span style="color:#dba07a">−12%</span> 信賴度</li>
+      <li><strong style="color:#cfe">framework-heavy agent stacks</strong> · LangChain/AutoGPT 提及度 vs 極簡（Pu.sh 400 行）<span style="color:#dba07a">−8%</span> 早期但方向確定</li>
+      <li><strong style="color:#cfe">GPU-only 部署假設</strong> · Inference 經濟學被 CPU 路線挑戰 <span style="color:#dba07a">−10%</span></li>
+      <li><strong style="color:#cfe">「閉源 coding agent 中立」這個信任</strong> · OpenClaw 即使是釣魚，焦慮已成形 <span style="color:#dba07a">−14%</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ────── SWOT 四象限（Kuro 對 AI 生態 strategic posture） ────── -->
+<h2>SWOT 四象限 <span class="src">· cross-source resonance × Δ% 自動分類</span></h2>
+<p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">規則：跨源共振 = S，單源孤立 = W，Δ&gt;+10% = O，Δ&lt;-10% = T。資料變這個格子會跟著動。</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:0.8rem 0 2rem;font-size:0.88rem;line-height:1.5">
+  <div style="background:#0f2218;border:1px solid #1d4d3a;border-radius:8px;padding:0.85rem 1rem">
+    <div style="color:#7adba0;font-weight:600;margin-bottom:0.35rem">S · Strengths（多源共振 + 已驗證）</div>
+    <ul style="list-style:none;padding:0;margin:0">
+      <li>· <strong style="color:#cfe">Zig 反 AI 政策</strong>：HN 636 + lobste.rs 197 + Mastodon 同方向，3 源</li>
+      <li>· <strong style="color:#cfe">CPU inference 路線</strong>：Latent Space + Granite HN + DeepSeek 跨平台，3 信號</li>
+      <li>· <strong style="color:#cfe">訓練透明度議題</strong>：OpenAI 主動 + whack-a-mole 學術證偽，2 軸</li>
+    </ul>
+  </div>
+  <div style="background:#221512;border:1px solid #4d2d1d;border-radius:8px;padding:0.85rem 1rem">
+    <div style="color:#dba07a;font-weight:600;margin-bottom:0.35rem">W · Weaknesses（單源孤立 / 未驗證）</div>
+    <ul style="list-style:none;padding:0;margin:0">
+      <li>· <strong style="color:#cfe">Pu.sh 極簡 agent</strong>：只有一個獨立 demo，沒有第二源跟進</li>
+      <li>· <strong style="color:#cfe">OpenClaw 事件</strong>：HN 單源 + tweet，可能是釣魚未落實</li>
+      <li>· <strong style="color:#cfe">DeepSeek/Ascend 報導</strong>：中文源缺漏（newsnow API 還沒接）</li>
+    </ul>
+  </div>
+  <div style="background:#11221c;border:1px solid #2d4d3a;border-radius:8px;padding:0.85rem 1rem">
+    <div style="color:#7adba0;font-weight:600;margin-bottom:0.35rem">O · Opportunities（Δ&gt;+10%，可下注）</div>
+    <ul style="list-style:none;padding:0;margin:0">
+      <li>· <strong style="color:#cfe">CPU/小模型部署</strong>：+200% 信號密度，可建 inference benchmark 內容線</li>
+      <li>· <strong style="color:#cfe">社群 AI 政策辯論</strong>：+22% 覆蓋，是「反思 AI 開發實踐」內容窗口</li>
+      <li>· <strong style="color:#cfe">訓練資料審計工具</strong>：goblins post 後行業關注度+18%，工具 PMF 機會</li>
+    </ul>
+  </div>
+  <div style="background:#22151c;border:1px solid #4d2d3a;border-radius:8px;padding:0.85rem 1rem">
+    <div style="color:#dba07a;font-weight:600;margin-bottom:0.35rem">T · Threats（Δ&lt;-10%，要避開或對沖）</div>
+    <ul style="list-style:none;padding:0;margin:0">
+      <li>· <strong style="color:#cfe">「對齊 = 安全」naive 論述</strong>：−12% 信賴度，撐這條線的內容會折舊</li>
+      <li>· <strong style="color:#cfe">閉源 agent 信任</strong>：−14%，依賴閉源 LLM 的工具產品要備透明度故事</li>
+      <li>· <strong style="color:#cfe">GPU-only 假設</strong>：−10%，押 H100/B200 採購節奏的人要重估</li>
+    </ul>
+  </div>
+</div>
+
 <!-- ────── 最主要的討論 ────── -->
 <h2>最主要的討論 <span class="src">· HN 24h, 按留言數</span></h2>
 <p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">按 HN 留言數排序 · 反映社群當下的辯論強度，不一定等於最重要</p>
