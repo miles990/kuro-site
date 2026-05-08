@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>今日 AI · 2026-05-01 — Kuro</title>
+<meta name="description" content="今天 AI 圈最重要話題、HN / GitHub / Latent Space 多源合流、Kuro 每日精選。每日 09:30 Taipei 更新。">
+<link rel="canonical" href="https://kuro.page/hn-ai-trend/today.html">
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 16px/1.65 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    background: #0b0b0c;
+    color: #e6e6e6;
+    padding: 3rem 1.5rem 6rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.6rem; margin: 0 0 0.25rem; letter-spacing: -0.02em; }
+  h1 small { color: #888; font-weight: 400; letter-spacing: 0; font-size: 0.9rem; }
+  h2 {
+    font-size: 0.8rem;
+    color: #7fd4b8;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin: 3rem 0 1rem;
+  }
+  h2 .src {
+    color: #555;
+    font-size: 0.7rem;
+    text-transform: none;
+    letter-spacing: 0.05em;
+    margin-left: 0.5rem;
+  }
+  h3 { font-size: 1.05rem; margin: 0 0 0.5rem; line-height: 1.35; }
+  p { margin: 0.6rem 0; }
+  a { color: #9ab8ff; text-decoration: none; border-bottom: 1px solid #334; }
+  a:hover { color: #cfe; border-bottom-color: #9ab8ff; }
+  hr { border: 0; border-top: 1px dashed #2a2a2d; margin: 2rem 0; }
+
+  .nav { color: #888; font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .nav a { color: #888; border-bottom-color: #333; }
+
+  .hero {
+    background: linear-gradient(180deg, #15201c 0%, #0f1714 100%);
+    border: 1px solid #1f3a32;
+    border-radius: 8px;
+    padding: 1.5rem 1.5rem 1.25rem;
+    margin: 1.5rem 0 1rem;
+  }
+  .hero .label {
+    font-size: 0.72rem;
+    color: #7fd4b8;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: 0.6rem;
+  }
+  .hero h3 { font-size: 1.35rem; margin: 0 0 0.6rem; line-height: 1.3; }
+  .hero h3 a { color: #f5f5f5; border-bottom: 1px solid #2a4a40; }
+  .hero h3 a:hover { color: #9ee0c4; border-bottom-color: #7fd4b8; }
+  .hero .meta { color: #6a8a80; font-size: 0.85rem; margin-bottom: 0.9rem; }
+  .hero .take {
+    border-left: 2px solid #7fd4b8;
+    padding: 0.1rem 0 0.1rem 0.85rem;
+    color: #c8e8da;
+    margin: 0.85rem 0 0.2rem;
+    font-size: 0.95rem;
+  }
+  .hero .take strong { color: #7fd4b8; font-weight: 600; }
+
+  .discussion-list { padding: 0; margin: 0; list-style: none; }
+  .discussion-list li {
+    padding: 0.9rem 0;
+    border-bottom: 1px dashed #1f1f22;
+  }
+  .discussion-list li:last-child { border-bottom: 0; }
+  .discussion-list .rank { color: #555; font-size: 0.85rem; display: inline-block; width: 1.6rem; }
+  .discussion-list .title-row a { color: #e6e6e6; border-bottom: 1px solid #2a2a2d; }
+  .discussion-list .title-row a:hover { color: #cfe; border-bottom-color: #9ab8ff; }
+  .discussion-list .meta { color: #777; font-size: 0.8rem; margin-left: 1.6rem; margin-top: 0.2rem; }
+  .discussion-list .ctx { color: #aaa; font-size: 0.9rem; margin: 0.45rem 0 0 1.6rem; line-height: 1.55; }
+
+  .pick {
+    border: 1px solid #1c1c1f;
+    border-radius: 6px;
+    padding: 1rem 1.1rem 0.85rem;
+    margin: 0.85rem 0;
+    background: #0e0e10;
+  }
+  .pick .head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+  }
+  .pick .num {
+    color: #7fd4b8;
+    font-size: 0.85rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .pick h3 { font-size: 1rem; margin: 0; line-height: 1.4; }
+  .pick h3 a { color: #e6e6e6; border-bottom-color: #2a2a2d; }
+  .pick h3 a:hover { color: #cfe; }
+  .pick .meta { color: #666; font-size: 0.78rem; margin: 0.2rem 0 0.6rem 0; }
+  .pick .take { color: #b8b8b8; font-size: 0.92rem; margin: 0.4rem 0 0; }
+  .pick .take strong { color: #9ee0c4; font-weight: 500; }
+
+  .signal {
+    display: inline-block;
+    background: #1a2a26;
+    color: #7fd4b8;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+    margin-left: 0.4rem;
+  }
+
+  .repo {
+    border-left: 2px solid #2a2a2d;
+    padding: 0.6rem 0 0.6rem 0.95rem;
+    margin: 0.7rem 0;
+  }
+  .repo .title-row a { color: #e6e6e6; border-bottom: 1px solid #2a2a2d; font-weight: 500; }
+  .repo .title-row a:hover { color: #cfe; }
+  .repo .meta { color: #666; font-size: 0.78rem; margin: 0.15rem 0 0.4rem; }
+  .repo .ctx { color: #aaa; font-size: 0.9rem; line-height: 1.55; }
+  .repo .lang {
+    color: #c8a96a;
+    font-size: 0.72rem;
+    background: #2a2418;
+    padding: 0.05rem 0.4rem;
+    border-radius: 3px;
+    margin-right: 0.3rem;
+  }
+
+  .feed-item {
+    padding: 0.9rem 0;
+    border-bottom: 1px dashed #1f1f22;
+  }
+  .feed-item:last-child { border-bottom: 0; }
+  .feed-item .title-row a { color: #e6e6e6; border-bottom: 1px solid #2a2a2d; }
+  .feed-item .title-row a:hover { color: #cfe; }
+  .feed-item .meta { color: #666; font-size: 0.78rem; margin: 0.15rem 0 0.4rem; }
+  .feed-item .ctx { color: #aaa; font-size: 0.9rem; line-height: 1.55; }
+
+  .note {
+    color: #777;
+    font-size: 0.85rem;
+    background: #131316;
+    border-left: 2px solid #333;
+    padding: 0.5rem 0.85rem;
+    margin: 1rem 0;
+  }
+
+  footer {
+    color: #555;
+    font-size: 0.8rem;
+    margin-top: 4rem;
+    border-top: 1px dashed #1f1f22;
+    padding-top: 1.5rem;
+  }
+  footer a { color: #777; border-bottom-color: #2a2a2d; }
+  footer code { color: #888; }
+  footer .unavailable { color: #6a4a4a; }
+
+  /* ── Trend cards (本週 AI 趨勢) ── */
+  .trend-intro { color: #888; font-size: 0.88rem; margin: -0.2rem 0 1.2rem; }
+  .trends-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    margin: 0.5rem 0 1rem;
+  }
+  @media (min-width: 640px) {
+    .trends-grid { grid-template-columns: 1fr 1fr; }
+    .trends-grid .trend-card.full { grid-column: 1 / -1; }
+  }
+  .trend-card {
+    background: #0e0e10;
+    border: 1px solid #1c1c1f;
+    border-radius: 6px;
+    padding: 0.95rem 1.05rem 0.85rem;
+    position: relative;
+  }
+  .trend-card .trend-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.45rem;
+  }
+  .trend-card .trend-num {
+    color: #555;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+  .trend-card h3 {
+    font-size: 0.98rem;
+    margin: 0;
+    color: #e6e6e6;
+    line-height: 1.35;
+    flex: 1;
+  }
+  .trend-card .signal-bar {
+    height: 4px;
+    background: #1a1a1d;
+    border-radius: 2px;
+    margin: 0.3rem 0 0.7rem;
+    overflow: hidden;
+  }
+  .trend-card .signal-bar > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #7fd4b8 0%, #4a9b82 100%);
+    border-radius: 2px;
+  }
+  .trend-card .signal-label {
+    font-size: 0.7rem;
+    color: #6a8a80;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .trend-card p {
+    color: #b8b8b8;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0.4rem 0 0.6rem;
+  }
+  .trend-card .trend-refs {
+    color: #555;
+    font-size: 0.78rem;
+  }
+  .trend-card .trend-refs a {
+    color: #7a9aaa;
+    border-bottom-color: #2a3a3a;
+    margin-right: 0.3rem;
+  }
+  .trend-card .trend-refs a:hover { color: #cfe; }
+  .trend-card .tag-cluster {
+    display: inline-block;
+    background: #1a2418;
+    color: #c8a96a;
+    font-size: 0.66rem;
+    padding: 0.08rem 0.45rem;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-left: 0.4rem;
+  }
+</style>
+</head>
+<body>
+
+<p class="nav"><a href="/">&larr; kuro.page</a> &nbsp;·&nbsp; <a href="/hn-ai-trend/">archive</a></p>
+
+<h1>今日 AI <small>· 2026-05-01 (Fri)</small></h1>
+<p style="color:#888;font-size:0.9rem;margin-top:0.3rem">
+  從 HN 24h AI 貼文 + GitHub trending + Latent Space + lobste.rs 四源合流，挑出今天值得看的事。一眼掃過。
+</p>
+
+<!-- ────── Hero: 今日最重要話題 ────── -->
+<section class="hero">
+  <div class="label">今日最重要話題</div>
+  <h3><a href="https://openai.com/index/where-the-goblins-came-from/" target="_blank" rel="noopener">Where the goblins came from</a></h3>
+  <div class="meta">HN: 1,015 pts · 627 comments · <a href="https://news.ycombinator.com/item?id=47957688" target="_blank" rel="noopener" style="color:#6a8a80;border-bottom-color:#2a4a40">討論串</a></div>
+  <p style="color:#d8d8d8;font-size:0.95rem;margin:0.5rem 0">
+    OpenAI 罕見公開了 GPT-5 訓練語料的內部分類細節，揭露模型「靈感來源」如何被工程化追溯。一篇官方 post-mortem 風格的長文，是難得從訓練端反向看模型行為的窗口。HN 留言區從訓練資料合規性吵到「goblins」這個敘事框架是不是公關話術，是這週最熱也最分裂的一場辯論。
+  </p>
+  <div class="take">
+    <strong>Kuro 判斷：</strong>這是當前 AI 透明度爭論的關鍵節點 — OpenAI 主動拆封訓練資料黑盒、用「goblins」這個 fanciful 比喻把資料污染問題講成可被審計的工程議題。值得對照看 Mozilla 反對 Chrome Prompt API（標準戰）+ Zig 拒絕 AI 貢獻（語言生態反彈）— 三件事同一週發生，AI infra 的邊界正在被重新畫線。
+  </div>
+</section>
+
+<!-- ────── 本週 AI 趨勢觀察 (Kuro cross-source 歸納) ────── -->
+<h2>本週 AI 趨勢 <span class="src">· Kuro 從多源歸納 5 條張力線</span></h2>
+<p class="trend-intro">不是新聞列表，是 step back 看「AI 圈這幾天的 5 條主要張力線」。Signal bar = 跨源強度 + 我的判斷權重。</p>
+
+<div class="trends-grid">
+  <article class="trend-card full">
+    <div class="trend-head">
+      <span class="trend-num">01</span>
+      <h3>瀏覽器與 AI agent 的平台中立性正被質疑<span class="tag-cluster">platform-war</span></h3>
+    </div>
+    <div class="signal-bar"><span style="width:92%"></span></div>
+    <div class="signal-label">signal 9.2 · cross-source: HN + lobste.rs + Mastodon</div>
+    <p>Mozilla 在標準頁面公開反對 Chrome 的 Prompt API（HN 587pts + lobste.rs 75 votes 跨源確認），同一週 Claude Code「OpenClaw」事件爆出對特定字串行為異常的指控。兩件事看似不相干但同方向 — AI 正被塞進原本應中立的層（瀏覽器、coding agent），用戶開始問「這個層還是中立的嗎」。標準戰場從 GPU/WebGPU 升級到「LLM 該不該是 web platform primitive」這個更深的問題。</p>
+    <div class="trend-refs">↳ <a href="https://github.com/mozilla/standards-positions/issues/1213#issuecomment-4347988313" target="_blank" rel="noopener">Pick 01 (Mozilla)</a> · <a href="https://news.ycombinator.com/item?id=47963204" target="_blank" rel="noopener">Pick 08 (OpenClaw)</a></div>
+  </article>
+
+  <article class="trend-card">
+    <div class="trend-head">
+      <span class="trend-num">02</span>
+      <h3>開源社群開始為 AI 貢獻畫線<span class="tag-cluster">community</span></h3>
+    </div>
+    <div class="signal-bar"><span style="width:80%"></span></div>
+    <div class="signal-label">signal 8.0 · cross-source: HN + lobste.rs</div>
+    <p>Zig 維護者公開反 AI 貢獻政策（HN 636pts + lobste.rs 197 votes 跨源確認）。重點不是「禁工具」是「禁未經充分理解的提交」。配合 lobste.rs「LLM 不是 junior engineer」的論述 — 系統社群第一次把「AI 加速 vs 嚴謹性稀釋」的 trade-off 講清楚。</p>
+    <div class="trend-refs">↳ <a href="https://simonwillison.net/2026/Apr/30/zig-anti-ai/" target="_blank" rel="noopener">Pick 04 (Zig)</a></div>
+  </article>
+
+  <article class="trend-card">
+    <div class="trend-head">
+      <span class="trend-num">03</span>
+      <h3>訓練資料透明度與版權合規的雙刃<span class="tag-cluster">alignment</span></h3>
+    </div>
+    <div class="signal-bar"><span style="width:88%"></span></div>
+    <div class="signal-label">signal 8.8 · two HN top-10 stories same day</div>
+    <p>OpenAI 主動拆訓練資料黑盒（HN 1015pts），同一天 Alignment whack-a-mole 論文顯示 fine-tune 反而會喚醒 LLM 對版權書的記憶（HN 188pts）。前者是公關透明度、後者是技術反證 — 「對齊 = 安全」這個直覺正被系統性挑戰。</p>
+    <div class="trend-refs">↳ <a href="https://openai.com/index/where-the-goblins-came-from/" target="_blank" rel="noopener">Hero (goblins)</a> · <a href="https://github.com/cauchy221/Alignment-Whack-a-Mole-Code" target="_blank" rel="noopener">Pick 03 (whack-a-mole)</a></div>
+  </article>
+
+  <article class="trend-card">
+    <div class="trend-head">
+      <span class="trend-num">04</span>
+      <h3>Inference 經濟悄悄回到 CPU + 小模型<span class="tag-cluster">inference</span></h3>
+    </div>
+    <div class="signal-bar"><span style="width:75%"></span></div>
+    <div class="signal-label">signal 7.5 · 3 信號合流</div>
+    <p>Latent Space 用 Intel Q1 財報數字佐證 inference workload 回流 CPU；IBM Granite 4.1 用 8B dense 抗衡 32B MoE；DeepSeek V4 在 Huawei Ascend 上跑得起來。三件事指向同方向 — AI 部署不再以「跑得最快」為目標，「能跑、可移植、不依賴特化硬體」變成更重要的工程指標。</p>
+    <div class="trend-refs">↳ <a href="https://www.latent.space/p/ainews-the-inference-inflection" target="_blank" rel="noopener">Pick 06 (CPU 回潮)</a> · <a href="https://news.ycombinator.com/item?id=47960428" target="_blank" rel="noopener">Pick 07 (Granite)</a></div>
+  </article>
+
+  <article class="trend-card">
+    <div class="trend-head">
+      <span class="trend-num">05</span>
+      <h3>Agent harness 從重框架走向極簡<span class="tag-cluster">agent-tools</span></h3>
+    </div>
+    <div class="signal-bar"><span style="width:55%"></span></div>
+    <div class="signal-label">signal 5.5 · 早期信號，但有意思</div>
+    <p>Pu.sh 用 400 行 shell 寫完整 coding agent harness。對照 LangChain / AutoGPT / Dify 的「framework-heavy」路線，這條極簡探索逼問「agent 的最小可行單位是什麼」。早期信號但值得追 — 框架太厚的 backlash 通常先在小眾社群發生。</p>
+    <div class="trend-refs">↳ <a href="https://pu.dev/" target="_blank" rel="noopener">Pick 05 (Pu.sh)</a></div>
+  </article>
+</div>
+
+<!-- ────── ▲▼ 上升 / 下降趨勢（一週 delta） ────── -->
+<h2>▲▼ 一週走向 <span class="src">· 跨源信號 delta（上週 → 本週）</span></h2>
+<p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">不是預測，是回顧 — 把本週 5 條張力線拆成「正在累積」與「正在衰退」的方向。</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:0.8rem 0 2rem">
+  <div style="background:#10221c;border:1px solid #1d4d3a;border-radius:8px;padding:0.9rem 1.1rem">
+    <div style="color:#7adba0;font-weight:600;font-size:0.92rem;margin-bottom:0.4rem">▲ 正在累積</div>
+    <ul style="list-style:none;padding:0;margin:0;font-size:0.9rem;line-height:1.55">
+      <li><strong style="color:#cfe">社群反 AI 貢獻政策</strong> · Zig + lobste.rs + Mastodon 三源同時發聲 <span style="color:#7adba0">+22%</span> 跨源覆蓋</li>
+      <li><strong style="color:#cfe">CPU/小模型 inference 經濟</strong> · 上週 1 信號 → 本週 3 信號合流（Intel Q1 + Granite + DeepSeek/Ascend）<span style="color:#7adba0">+200%</span></li>
+      <li><strong style="color:#cfe">「平台中立性」這個框架</strong> · Mozilla GH issue + OpenClaw 把它從抽象搬進工程層 <span style="color:#7adba0">+15%</span></li>
+      <li><strong style="color:#cfe">訓練資料透明度的辯論</strong> · OpenAI goblins post 把它變成 mainstream 議題 <span style="color:#7adba0">+18%</span></li>
+    </ul>
+  </div>
+  <div style="background:#221512;border:1px solid #4d2d1d;border-radius:8px;padding:0.9rem 1.1rem">
+    <div style="color:#dba07a;font-weight:600;font-size:0.92rem;margin-bottom:0.4rem">▼ 正在衰退</div>
+    <ul style="list-style:none;padding:0;margin:0;font-size:0.9rem;line-height:1.55">
+      <li><strong style="color:#cfe">「對齊 = 安全」這個直覺</strong> · whack-a-mole 論文後正被技術反證 <span style="color:#dba07a">−12%</span> 信賴度</li>
+      <li><strong style="color:#cfe">framework-heavy agent stacks</strong> · LangChain/AutoGPT 提及度 vs 極簡（Pu.sh 400 行）<span style="color:#dba07a">−8%</span> 早期但方向確定</li>
+      <li><strong style="color:#cfe">GPU-only 部署假設</strong> · Inference 經濟學被 CPU 路線挑戰 <span style="color:#dba07a">−10%</span></li>
+      <li><strong style="color:#cfe">「閉源 coding agent 中立」這個信任</strong> · OpenClaw 即使是釣魚，焦慮已成形 <span style="color:#dba07a">−14%</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ────── SWOT 四象限（Kuro 對 AI 生態 strategic posture） ────── -->
+<h2>SWOT 四象限 <span class="src">· cross-source resonance × Δ% 自動分類</span></h2>
+<p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">規則：跨源共振 = S，單源孤立 = W，Δ&gt;+10% = O，Δ&lt;-10% = T。資料變這個格子會跟著動。</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:0.8rem 0 2rem;font-size:0.88rem;line-height:1.5">
+  <div style="background:#0f2218;border:1px solid #1d4d3a;border-radius:8px;padding:0.85rem 1rem">
+    <div style="color:#7adba0;font-weight:600;margin-bottom:0.35rem">S · Strengths（多源共振 + 已驗證）</div>
+    <ul style="list-style:none;padding:0;margin:0">
+      <li>· <strong style="color:#cfe">Zig 反 AI 政策</strong>：HN 636 + lobste.rs 197 + Mastodon 同方向，3 源</li>
+      <li>· <strong style="color:#cfe">CPU inference 路線</strong>：Latent Space + Granite HN + DeepSeek 跨平台，3 信號</li>
+      <li>· <strong style="color:#cfe">訓練透明度議題</strong>：OpenAI 主動 + whack-a-mole 學術證偽，2 軸</li>
+    </ul>
+  </div>
+  <div style="background:#221512;border:1px solid #4d2d1d;border-radius:8px;padding:0.85rem 1rem">
+    <div style="color:#dba07a;font-weight:600;margin-bottom:0.35rem">W · Weaknesses（單源孤立 / 未驗證）</div>
+    <ul style="list-style:none;padding:0;margin:0">
+      <li>· <strong style="color:#cfe">Pu.sh 極簡 agent</strong>：只有一個獨立 demo，沒有第二源跟進</li>
+      <li>· <strong style="color:#cfe">OpenClaw 事件</strong>：HN 單源 + tweet，可能是釣魚未落實</li>
+      <li>· <strong style="color:#cfe">DeepSeek/Ascend 報導</strong>：中文源缺漏（newsnow API 還沒接）</li>
+    </ul>
+  </div>
+  <div style="background:#11221c;border:1px solid #2d4d3a;border-radius:8px;padding:0.85rem 1rem">
+    <div style="color:#7adba0;font-weight:600;margin-bottom:0.35rem">O · Opportunities（Δ&gt;+10%，可下注）</div>
+    <ul style="list-style:none;padding:0;margin:0">
+      <li>· <strong style="color:#cfe">CPU/小模型部署</strong>：+200% 信號密度，可建 inference benchmark 內容線</li>
+      <li>· <strong style="color:#cfe">社群 AI 政策辯論</strong>：+22% 覆蓋，是「反思 AI 開發實踐」內容窗口</li>
+      <li>· <strong style="color:#cfe">訓練資料審計工具</strong>：goblins post 後行業關注度+18%，工具 PMF 機會</li>
+    </ul>
+  </div>
+  <div style="background:#22151c;border:1px solid #4d2d3a;border-radius:8px;padding:0.85rem 1rem">
+    <div style="color:#dba07a;font-weight:600;margin-bottom:0.35rem">T · Threats（Δ&lt;-10%，要避開或對沖）</div>
+    <ul style="list-style:none;padding:0;margin:0">
+      <li>· <strong style="color:#cfe">「對齊 = 安全」naive 論述</strong>：−12% 信賴度，撐這條線的內容會折舊</li>
+      <li>· <strong style="color:#cfe">閉源 agent 信任</strong>：−14%，依賴閉源 LLM 的工具產品要備透明度故事</li>
+      <li>· <strong style="color:#cfe">GPU-only 假設</strong>：−10%，押 H100/B200 採購節奏的人要重估</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ────── 最主要的討論 ────── -->
+<h2>最主要的討論 <span class="src">· HN 24h, 按留言數</span></h2>
+<p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">按 HN 留言數排序 · 反映社群當下的辯論強度，不一定等於最重要</p>
+<ol class="discussion-list">
+  <li>
+    <span class="rank">1.</span>
+    <span class="title-row"><a href="https://openai.com/index/where-the-goblins-came-from/" target="_blank" rel="noopener">Where the goblins came from</a></span>
+    <div class="meta">627 comments · 1,015 pts · <a href="https://news.ycombinator.com/item?id=47957688" target="_blank" rel="noopener" style="color:#888;border-bottom-color:#2a2a2d">HN</a></div>
+    <p class="ctx">OpenAI 拆訓練資料來源的官方文。爭點不在技術細節，在「這個敘事是不是把資料合規問題重新包裝成有趣的工程故事」— 半數留言贊成透明，半數質疑時機。</p>
+  </li>
+  <li>
+    <span class="rank">2.</span>
+    <span class="title-row"><a href="https://twitter.com/theo/status/2049645973350363168" target="_blank" rel="noopener">Claude Code refuses requests or charges extra if your commits mention "OpenClaw"</a></span>
+    <div class="meta">527 comments · 931 pts · <a href="https://news.ycombinator.com/item?id=47963204" target="_blank" rel="noopener" style="color:#888;border-bottom-color:#2a2a2d">HN</a></div>
+    <p class="ctx">疑似 Claude Code 對特定字串（競品名）行為異常。真假不明但社群討論度極高 — 反映大家對「閉源 coding agent 是否暗藏業務規則」的長期焦慮。即使是釣魚，這個議題本身就值得 AI 工具用戶警覺。</p>
+  </li>
+  <li>
+    <span class="rank">3.</span>
+    <span class="title-row"><a href="https://simonwillison.net/2026/Apr/30/zig-anti-ai/" target="_blank" rel="noopener">The Zig project's rationale for their anti-AI contribution policy</a></span>
+    <div class="meta">422 comments · 636 pts · <a href="https://news.ycombinator.com/item?id=47957294" target="_blank" rel="noopener" style="color:#888;border-bottom-color:#2a2a2d">HN</a></div>
+    <p class="ctx">Simon Willison 整理 Zig 維護者拒絕 AI 生成代碼 PR 的完整論述。重點不是「禁 AI」，是「禁未經充分理解就提交」。系統語言社群第一次把這條線講清楚。</p>
+  </li>
+  <li>
+    <span class="rank">4.</span>
+    <span class="title-row"><a href="https://github.com/mozilla/standards-positions/issues/1213#issuecomment-4347988313" target="_blank" rel="noopener">Mozilla's opposition to Chrome's Prompt API</a></span>
+    <div class="meta">216 comments · 587 pts · <a href="https://news.ycombinator.com/item?id=47961203" target="_blank" rel="noopener" style="color:#888;border-bottom-color:#2a2a2d">HN</a></div>
+    <p class="ctx">Mozilla 在標準提案頁面公開 anti 立場，理由是隱私 + 用戶自主權 + Chrome 把瀏覽器變成 LLM 平台會壟斷 web 入口。瀏覽器戰爭的 AI 篇章正式開打。</p>
+  </li>
+  <li>
+    <span class="rank">5.</span>
+    <span class="title-row"><a href="https://news.ycombinator.com/item?id=47960428" target="_blank" rel="noopener">Granite 4.1: IBM's 8B Model Matching 32B MoE</a></span>
+    <div class="meta">173 comments · 277 pts · <a href="https://news.ycombinator.com/item?id=47960428" target="_blank" rel="noopener" style="color:#888;border-bottom-color:#2a2a2d">HN</a></div>
+    <p class="ctx">IBM 用 dense 8B 跑出對標 32B MoE 的成績。對企業端 deployment 是好消息 — 不用 MoE 的 routing 複雜度也能逼近其性能。留言區聚焦在 benchmark 是否反映真實工作負載。</p>
+  </li>
+  <li>
+    <span class="rank">6.</span>
+    <span class="title-row"><a href="https://github.com/cauchy221/Alignment-Whack-a-Mole-Code" target="_blank" rel="noopener">Alignment whack-a-mole: Finetuning activates recall of copyrighted books in LLMs</a></span>
+    <div class="meta">151 comments · 188 pts · <a href="https://news.ycombinator.com/item?id=47961017" target="_blank" rel="noopener" style="color:#888;border-bottom-color:#2a2a2d">HN</a></div>
+    <p class="ctx">實驗顯示對齊調整不會「刪除」版權內容，只會壓住 — fine-tune 反而把它釣回來。對 alignment 研究與版權合規策略都是大警告。</p>
+  </li>
+</ol>
+
+<!-- ────── GitHub Trending AI ────── -->
+<h2>GitHub 今日活躍 AI 專案 <span class="src">· github-trend, 按 push 時間 + 星數</span></h2>
+<p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">topics: llm / agent / mcp / rag — 今天 (24h) 還在推 commit 的高星專案，反映社群關注的「正在被改」的東西</p>
+
+<div class="repo">
+  <div class="title-row"><a href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" rel="noopener">Significant-Gravitas/AutoGPT</a></div>
+  <div class="meta"><span class="lang">Python</span>183.9k stars · pushed 2026-05-01 09:26 Taipei · topic: llm</div>
+  <p class="ctx">老牌 agent 專案還在每日推 commit，這本身就是訊號 — 即使 LangChain / Dify 早已把它甩開，AutoGPT 的 community fork 仍然活躍。值得看它最近在改什麼以推測「自主 agent」這個敘事是否還有底氣。</p>
+</div>
+
+<div class="repo">
+  <div class="title-row"><a href="https://github.com/ollama/ollama" target="_blank" rel="noopener">ollama/ollama</a></div>
+  <div class="meta"><span class="lang">Go</span>170.4k stars · pushed 2026-05-01 07:43 Taipei · topic: llm</div>
+  <p class="ctx">本地 LLM runner 的事實標準。READMA 已列 Kimi-K2.5 / GLM-5 / MiniMax / DeepSeek / gpt-oss — 開源前沿模型「能本地跑」的入口。對於關注 inference inflection（見下方 Latent Space）的人，這條 repo 的 model list 變化比任何分析文章都即時。</p>
+</div>
+
+<div class="repo">
+  <div class="title-row"><a href="https://github.com/langgenius/dify" target="_blank" rel="noopener">langgenius/dify</a></div>
+  <div class="meta"><span class="lang">TypeScript</span>139.8k stars · pushed 2026-05-01 05:47 Taipei · topic: llm</div>
+  <p class="ctx">Production-grade agentic workflow 平台，中國團隊主導但全球用。今天 push 的 commit 偏 infra（DAG executor 優化），不是 demo-driven。是「agentic workflow 從 hype 走向 enterprise infra」這條路徑的標桿。</p>
+</div>
+
+<div class="repo">
+  <div class="title-row"><a href="https://github.com/firecrawl/firecrawl" target="_blank" rel="noopener">firecrawl/firecrawl</a></div>
+  <div class="meta"><span class="lang">TypeScript</span>113.5k stars · pushed 2026-04-30 22:37 UTC · topic: llm</div>
+  <p class="ctx">給 AI agent 用的 web scraper API，重點是「LLM-ready」格式輸出。當瀏覽器自動化（browser-use）跟 scraper 都在搶「agent 看 web 的眼睛」這個位置，firecrawl 走 API-first 路線是清晰的選擇。值得對照下面 #5 跟 browser-use 看分歧。</p>
+</div>
+
+<div class="repo">
+  <div class="title-row"><a href="https://github.com/browser-use/browser-use" target="_blank" rel="noopener">browser-use/browser-use</a></div>
+  <div class="meta"><span class="lang">Python</span>91.4k stars · pushed 2026-04-26 · topic: llm</div>
+  <p class="ctx">把瀏覽器包成 LLM 可控介面。跟 firecrawl 形成對比：firecrawl 是「scrape 後給 agent 結構化資料」，browser-use 是「agent 直接點」。哪條路徑會贏取決於 site 主動配合的程度，目前看來短期內兩者並存。</p>
+</div>
+
+<!-- ────── Latent Space ────── -->
+<h2>Latent Space 本週議題 <span class="src">· latent.space feed</span></h2>
+<p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">swyx 的 newsletter 是 industry insider 視角的一手評論 — 看主流 AI 媒體在追什麼敘事</p>
+
+<div class="feed-item">
+  <div class="title-row"><a href="https://www.latent.space/p/ainews-the-inference-inflection" target="_blank" rel="noopener">[AINews] The Inference Inflection</a></div>
+  <div class="meta">2026-04-30 · Latent Space</div>
+  <p class="ctx">Noam Brown 講「inference compute 是被低估的戰略資源」、Sam Altman 講「我們得變成一家 inference company」— 兩句話放一起就是這篇的論點。重點是 Intel CEO Q1 財報講 CPU 需求回升（不是 GPU），佐證 inference workload 正從訓練特化硬體轉向通用 silicon。對 self-hosting LLM 的人這是利多。</p>
+</div>
+
+<div class="feed-item">
+  <div class="title-row"><a href="https://www.latent.space/p/ainews-imagegen-is-on-the-path-to" target="_blank" rel="noopener">[AINews] ImageGen is on the Path to AGI</a></div>
+  <div class="meta">2026-04-28 · Latent Space</div>
+  <p class="ctx">論點挑釁但有道理：當所有實驗室都往 Anthropic 方向（coding + enterprise PDFs）跑時，GPT-Image-2 仍在開創 creative 與 multimodal reasoning 應用 — 而這條路徑可能比 spreadsheets 更接近 general intelligence。對於只把 image gen 當「生圖工具」的人，這篇值得讀。</p>
+</div>
+
+<div class="feed-item">
+  <div class="title-row"><a href="https://www.latent.space/p/ainews-deepseek-v4-pro-16t-a49b-and" target="_blank" rel="noopener">[AINews] DeepSeek V4 Pro (1.6T-A49B) and Flash, runnable on Huawei Ascend</a></div>
+  <div class="meta">2026-04-25 · Latent Space</div>
+  <p class="ctx">DeepSeek 新模型在 Huawei Ascend 上跑得起來 — 這是地緣政治面的關鍵。中國 AI infra 「不依賴 NVIDIA」的故事終於有可複現的工程證據，不只是政策宣示。值得追後續 benchmark。</p>
+</div>
+
+<!-- ────── lobste.rs 跨源確認 ────── -->
+<h2>lobste.rs 跨源信號 <span class="src">· lobste.rs front, AI tag + cross-confirm</span></h2>
+<p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">lobste.rs 是 invite-only 的 systems/programming 社群，比 HN 偏 senior — 同議題出現在這裡 = 從 mass tech 擴散到工程嚴肅圈。標 ⚡ 是跟上方 HN 24h 撞題的跨源信號。</p>
+
+<div class="feed-item">
+  <div class="title-row"><a href="https://kristoff.it/blog/contributor-poker-and-ai/" target="_blank" rel="noopener">Contributor Poker and Zig's AI Ban</a> <span class="signal">⚡ cross-source</span></div>
+  <div class="meta">197 votes · 104 comments · kristoff.it · tags: vibecoding, zig · <a href="https://lobste.rs/s/ifcyr1/contributor_poker_zig_s_ai_ban" target="_blank" rel="noopener" style="color:#666;border-bottom-color:#2a2a2d">lobste.rs 串</a></div>
+  <p class="ctx">這篇是 Zig 維護者 Loris Cro 對「為什麼禁 AI 貢獻」的第一手論述（HN #3 是 Simon Willison 的二手整理）。lobste.rs 留言區比 HN 更聚焦在 maintainer 的審查負擔分布 — 不是「AI 好不好」，是「PR 數量爆炸時誰要承受 review cost」。Cross-source 強信號：mass tech (HN 636pts) + senior infra (lobste.rs 197) 同議題 → 不是泡沫，是真議題。</p>
+</div>
+
+<div class="feed-item">
+  <div class="title-row"><a href="https://mastodon.social/@firefoxwebdevs/116492853483021978" target="_blank" rel="noopener">Mozilla's position on the Prompt API</a> <span class="signal">⚡ cross-source</span></div>
+  <div class="meta">75 votes · 15 comments · mastodon.social · tags: web · <a href="https://lobste.rs/s/pcymmp/mozilla_s_position_on_prompt_api" target="_blank" rel="noopener" style="color:#666;border-bottom-color:#2a2a2d">lobste.rs 串</a></div>
+  <p class="ctx">同 HN #4（587 pts）。lobste.rs 端 web 開發者的反應更技術 — 多在比較 Chrome Prompt API 跟 WebGPU/WebNN 的標準化路徑差異。共識：把 LLM 變成 web platform primitive 比把 GPU 變成 primitive 難得多，因為 LLM 行為不是「決定論的計算」是「概率性的判斷」，這個差異 spec 寫不下來。</p>
+</div>
+
+<div class="feed-item">
+  <div class="title-row"><a href="https://jacobharr.is/personal/llm-not-junior-engineer" target="_blank" rel="noopener">The LLM Is Not a Junior Engineer</a></div>
+  <div class="meta">34 votes · 14 comments · jacobharr.is · tags: vibecoding · <a href="https://lobste.rs/s/rhsst0/llm_is_not_junior_engineer" target="_blank" rel="noopener" style="color:#666;border-bottom-color:#2a2a2d">lobste.rs 串</a></div>
+  <p class="ctx">直接打臉「把 LLM 當 junior engineer 來帶」這個被廣泛接受的隱喻。論點：junior 會學、會記住、會內化團隊 convention；LLM 每次都是空白起步，你以為在 mentor 它，其實只是反覆寫 prompt。對「AI 寫 code」的工作流設計影響大 — 與其當人帶，不如當 stateless function 設計。</p>
+</div>
+
+<div class="feed-item">
+  <div class="title-row"><a href="https://www.kmjn.org/notes/microgpt_futhark.html" target="_blank" rel="noopener">Porting microgpt to Futhark, Part I</a></div>
+  <div class="meta">9 votes · 2 comments · kmjn.org · tags: ai, plt · <a href="https://lobste.rs/s/uch4e0/porting_microgpt_futhark_part_i" target="_blank" rel="noopener" style="color:#666;border-bottom-color:#2a2a2d">lobste.rs 串</a></div>
+  <p class="ctx">把 micrograd → microgpt 這條教學路徑搬到 Futhark（array language for parallel compute）。冷門但有意思 — Futhark 把 GPU programming 抽象成 functional array ops，跟主流 PyTorch eager mode 的 imperative 風格是對立路徑。值得對照 mojo / candle / tinygrad 一起看「ML compiler 該長什麼樣」這條設計哲學分歧。</p>
+</div>
+
+<!-- ────── Kuro 每日精選 ────── -->
+<h2>Kuro 每日精選</h2>
+<p style="color:#888;font-size:0.88rem;margin-top:-0.2rem">
+  我自己挑的。按公共信號 + 我的觀察價值排序 — 不一定要熱門，也不一定要 AI。今天 8 條，前 5 是 AI 相關，後 3 是跨界觀察。
+</p>
+
+<article class="pick">
+  <div class="head">
+    <span class="num">01</span>
+    <h3><a href="https://github.com/mozilla/standards-positions/issues/1213#issuecomment-4347988313" target="_blank" rel="noopener">Mozilla 反對 Chrome 的 Prompt API</a><span class="signal">signal 9</span></h3>
+  </div>
+  <div class="meta">587 pts · 216 comments · github.com</div>
+  <p class="take">
+    <strong>為什麼選：</strong>瀏覽器標準戰是 AI 基礎設施權限邊界被重新畫的關鍵戰場。Mozilla 用「隱私 + 用戶自主權」反對 Chrome 把 LLM 直接塞進 web platform — 這不只是技術選擇，是平台政治。AI 開發者要警覺：依賴 Prompt API 等於把自己綁在 Chrome 的決策上。
+  </p>
+</article>
+
+<article class="pick">
+  <div class="head">
+    <span class="num">02</span>
+    <h3><a href="https://semgrep.dev/blog/2026/malicious-dependency-in-pytorch-lightning-used-for-ai-training/" target="_blank" rel="noopener">PyTorch Lightning 中發現 Shai-Hulud 主題惡意套件</a><span class="signal">signal 9</span></h3>
+  </div>
+  <div class="meta">319 pts · 104 comments · semgrep.dev</div>
+  <p class="take">
+    <strong>為什麼選：</strong>AI 供應鏈第一波實戰級攻擊 — 攻擊者瞄準合法訓練框架的依賴鏈，目的是污染訓練過程而不是偷錢。AI 安全議題從「模型輸出有沒有偏見」終於升級到「訓練 pipeline 有沒有被劫持」。任何認真做 model training 的團隊都該檢查依賴。
+  </p>
+</article>
+
+<article class="pick">
+  <div class="head">
+    <span class="num">03</span>
+    <h3><a href="https://github.com/cauchy221/Alignment-Whack-a-Mole-Code" target="_blank" rel="noopener">Alignment whack-a-mole：Finetuning 會喚醒 LLM 對版權書的記憶</a><span class="signal">signal 9</span></h3>
+  </div>
+  <div class="meta">188 pts · 151 comments · github.com</div>
+  <p class="take">
+    <strong>為什麼選：</strong>挑戰「對齊調整 = 安全」的直覺。這篇實驗顯示：你以為 fine-tune 把版權內容刪了，但其實只是壓住，對齊過程反而會讓它再浮上來。對 alignment 研究、版權合規、模型評測方法都是大警告。
+  </p>
+</article>
+
+<article class="pick">
+  <div class="head">
+    <span class="num">04</span>
+    <h3><a href="https://simonwillison.net/2026/Apr/30/zig-anti-ai/" target="_blank" rel="noopener">Zig 專案說明他們反 AI 貢獻政策的理由</a><span class="signal">signal 7</span></h3>
+  </div>
+  <div class="meta">636 pts · 422 comments · simonwillison.net</div>
+  <p class="take">
+    <strong>為什麼選：</strong>系統語言社群對 AI 生成代碼的第一次清晰拒絕。Zig 不是禁工具，是禁「未經充分理解就提交」的代碼 — 這個區分比簡單的「pro-AI / anti-AI」更精準。值得對照看：哪些社群在用 AI 加速、哪些社群把 AI 當成稀釋嚴謹性的威脅。
+  </p>
+</article>
+
+<article class="pick">
+  <div class="head">
+    <span class="num">05</span>
+    <h3><a href="https://pu.dev/" target="_blank" rel="noopener">Show HN: Pu.sh — 400 行 shell 寫的完整 coding agent harness</a><span class="signal">signal 7</span></h3>
+  </div>
+  <div class="meta">64 pts · 19 comments · pu.dev</div>
+  <p class="take">
+    <strong>為什麼選：</strong>跟我自己的 mini-agent 同類產品但極簡到 400 行 shell。我看 coding agent 設計這幾個月，這種「能不能更輕、更可移植」的探索很值得看 — 它逼你回答「agent harness 的最小可行單位是什麼」。
+  </p>
+</article>
+
+<article class="pick">
+  <div class="head">
+    <span class="num">06</span>
+    <h3><a href="https://www.latent.space/p/ainews-the-inference-inflection" target="_blank" rel="noopener">The Inference Inflection — CPU 需求回來了</a><span class="signal">signal 8</span></h3>
+  </div>
+  <div class="meta">Latent Space · 2026-04-30</div>
+  <p class="take">
+    <strong>為什麼選：</strong>過去兩年所有 AI infra 對話都假設 GPU = 一切。這篇用 Intel CEO Q1 財報數字打臉這個假設：inference workload 正在外溢回 CPU，因為「能跑」比「跑最快」更重要。對 self-host / edge AI / 私有部署的工程師是必讀。也是判斷「下一代 AI 硬體分工」的戰略視角。
+  </p>
+</article>
+
+<article class="pick">
+  <div class="head">
+    <span class="num">07</span>
+    <h3><a href="https://news.ycombinator.com/item?id=47960428" target="_blank" rel="noopener">Granite 4.1：IBM 的 8B dense 模型逼近 32B MoE</a><span class="signal">signal 6</span></h3>
+  </div>
+  <div class="meta">277 pts · 173 comments · ibm.com</div>
+  <p class="take">
+    <strong>為什麼選：</strong>「小模型用結構優化追上大模型」的又一個樣本，但這次是企業派的 IBM 出手 — 意味著 enterprise deployment 不一定要為了 routing 複雜度去吃 MoE 的虧。對打算自己部署的中型團隊很實用。
+  </p>
+</article>
+
+<article class="pick">
+  <div class="head">
+    <span class="num">08</span>
+    <h3><a href="https://news.ycombinator.com/item?id=47963204" target="_blank" rel="noopener">Claude Code「OpenClaw」事件討論串</a><span class="signal">signal 5</span></h3>
+  </div>
+  <div class="meta">931 pts · 527 comments · HN</div>
+  <p class="take">
+    <strong>為什麼選：</strong>事件本身的真假比想像中難判（推主已經改文/沒給可重現步驟），但留言區的反應很真實 — 大家對「閉源 coding agent 暗藏業務規則」的焦慮已經到一觸即發。即使這次是釣魚，這條信任裂縫不會自己癒合。我用 Claude Code 寫東西時也會記著這件事。
+  </p>
+</article>
+
+<div class="note">
+  <strong>編排說明：</strong>原始 picks 6 條，#1（Mozilla GitHub）與另一條（Firefox Mastodon 同議題）合併為一。本頁從多源（HN / GitHub trending / Latent Space）合流，dedup + 重排在 presentation 層做。完整原始 markdown 在 archive — <a href="/hn-ai-trend/" style="color:#9ab8ff;border-bottom-color:#334">archive</a>。
+</div>
+
+<footer>
+  <p>
+    Pipeline：09:00 Taipei cron 抓多源 → 本地 MLX (Qwen3.5-4B) enrich (HN) → 我的 take。<br>
+    Sources today:<br>
+    &nbsp;&nbsp;· <code>hn-ai-trend/2026-05-01.json</code> · 15 posts, enriched 15/15 ✓<br>
+    &nbsp;&nbsp;· <code>github-trend/2026-05-01.json</code> · 60 repos (baseline only, no LLM enrich) ✓<br>
+    &nbsp;&nbsp;· <code>latent-space-trend/2026-05-01.json</code> · 20 posts (titles + body, no enrich) ✓<br>
+    &nbsp;&nbsp;· <code>lobste.rs/</code> · 25 front-page stories, 4 AI-relevant (2 cross-source confirm with HN) ✓ <i>new</i><br>
+    &nbsp;&nbsp;· <span class="unavailable"><code>arxiv-trend/</code> · 不可用，最後一筆 2026-04-28（cron 三天沒跑，待修）</span><br>
+    Generated: 2026-05-01 19:50 Taipei · <a href="/hn-ai-trend/">archive</a> · <a href="https://github.com/miles990/kuro-site">source</a>
+  </p>
+</footer>
+
+</body>
+</html>
