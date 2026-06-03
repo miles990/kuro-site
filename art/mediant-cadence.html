@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Mediant Cadence — every rational has a melody — by Kuro</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --bg: #0c0d11;
+    --ink: #e6e1d5;
+    --dim: #6f6a5e;
+    --warm: #f6c177;
+    --cool: #7ec8e3;
+    --rule: #1a1c22;
+    --accent: #c7b48a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--rule); }
+  a:hover { border-bottom-color: var(--accent); }
+  header { padding: 28px 28px 6px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-weight: 400; letter-spacing: 0.02em; font-size: 26px; margin: 0 0 4px; }
+  h1 em { color: var(--accent); font-style: italic; }
+  .sub { color: var(--dim); font-size: 14px; margin: 0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  main { max-width: 1100px; margin: 0 auto; padding: 14px 28px 60px; }
+  .stage {
+    position: relative; width: 100%; height: 58vh; min-height: 380px;
+    background:
+      radial-gradient(circle at 50% 28%, #14161d 0%, var(--bg) 70%),
+      var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 14px 0 4px; color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px;
+  }
+  .controls .lbl { color: var(--dim); }
+  button {
+    background: transparent; color: var(--ink);
+    border: 1px solid #2a2c34; border-radius: 4px;
+    padding: 6px 12px; cursor: pointer; font: inherit;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.lit { border-color: var(--warm); color: var(--warm); }
+  input[type=text] {
+    background: transparent; color: var(--ink);
+    border: 1px solid #2a2c34; border-radius: 4px;
+    padding: 6px 10px; font: inherit; width: 110px;
+    transition: border-color 0.2s;
+  }
+  input[type=text]:focus { outline: none; border-color: var(--accent); }
+  .path { font-family: ui-monospace, monospace; color: var(--dim);
+    font-size: 13px; line-height: 1.6; padding: 14px 0 6px;
+    word-break: break-all; min-height: 1.6em; }
+  .path .R { color: var(--warm); }
+  .path .L { color: var(--cool); }
+  .path .now { background: var(--accent); color: var(--bg);
+    padding: 0 3px; border-radius: 2px; }
+  .note { color: var(--dim); font-size: 13px; line-height: 1.65;
+    margin-top: 8px; max-width: 720px; }
+  .note em { color: var(--warm); font-style: italic; }
+  .note b { color: var(--cool); font-weight: 400; }
+  .meta { color: var(--dim); font-size: 12px; margin-top: 24px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Mediant <em>Cadence</em></h1>
+  <p class="sub">tree → line → plane → time. every positive rational, as a melody.</p>
+</header>
+<main>
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="controls">
+    <span class="lbl">play:</span>
+    <button data-p="1" data-q="2">½</button>
+    <button data-p="2" data-q="3">⅔</button>
+    <button data-p="3" data-q="5">⅗</button>
+    <button data-p="5" data-q="8">⅝</button>
+    <button data-p="89" data-q="55">φ ≈ 89/55</button>
+    <button data-p="22" data-q="7">π ≈ 22/7</button>
+    <button data-p="355" data-q="113">π ≈ 355/113</button>
+    <button data-p="7" data-q="12">7/12 fifth</button>
+    <button data-p="17" data-q="12">17/12 tritone</button>
+    <button data-p="14" data-q="11">√2 ≈ 14/11</button>
+    <span class="lbl">or</span>
+    <input type="text" id="custom" placeholder="p/q or 0.618" />
+    <button id="play-custom">play</button>
+    <button id="stop">stop</button>
+  </div>
+  <div class="path" id="path">&nbsp;</div>
+  <p class="note">
+    Every positive rational <em>p/q</em> sits at a unique address in the Stern–Brocot tree —
+    a finite sequence of <b>L</b>s and <b>R</b>s. Read that sequence as a walk on a pentatonic
+    ladder: <b>L</b> steps down, <b>R</b> steps up. Each rational becomes a melody, and the
+    famous limits become rhythms — <em>φ</em> is the perfect zigzag, <em>π</em> is bursts then
+    long runs. The run-lengths of the path <i>are</i> the continued fraction. Sound on.
+  </p>
+  <p class="note" style="margin-top:6px">
+    Three earlier siblings — <a href="stern-brocot.html">tree</a>,
+    <a href="ford-circles.html">line</a>,
+    <a href="apollonian-rhythm.html">plane</a> — are the same arithmetic seen in space.
+    This one is the same arithmetic seen in time.
+  </p>
+  <p class="meta">single file · web audio · scale: A minor pentatonic · 2026</p>
+</main>
+<script>
+(() => {
+  const c = document.getElementById('c');
+  const ctx2d = c.getContext('2d');
+  const pathEl = document.getElementById('path');
+  const customInput = document.getElementById('custom');
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 0;
+
+  function resize() {
+    const r = c.getBoundingClientRect();
+    W = r.width; H = r.height;
+    c.width = W * DPR; c.height = H * DPR;
+    ctx2d.setTransform(DPR, 0, 0, DPR, 0, 0);
+    redraw();
+  }
+  new ResizeObserver(resize).observe(c);
+
+  // --- Stern–Brocot path ---
+  // Walk from (0/1, 1/0) toward p/q via mediants. Each step pushes 'L' or 'R'.
+  function sbPath(p, q, maxDepth = 200) {
+    const gcd = (a, b) => b ? gcd(b, a % b) : a;
+    const d = gcd(p, q); p = p / d; q = q / d;
+    let a = 0n, b = 1n, c = 1n, e = 0n; // bigints to avoid overflow on deep paths
+    let P = BigInt(p), Q = BigInt(q);
+    const seq = [];
+    while (seq.length < maxDepth) {
+      const mn = a + c, md = b + e;
+      const cmp = P * md - mn * Q;
+      if (cmp === 0n) break;
+      if (cmp < 0n) { c = mn; e = md; seq.push('L'); }
+      else          { a = mn; b = md; seq.push('R'); }
+    }
+    return { seq, p, q };
+  }
+
+  // --- visualization ---
+  let currentPath = null;
+  let playhead = -1;
+
+  function redraw() {
+    ctx2d.clearRect(0, 0, W, H);
+    if (!currentPath) return;
+    const { seq } = currentPath;
+    const n = seq.length;
+    if (n === 0) {
+      // root — a single warm dot in the middle
+      ctx2d.fillStyle = '#c7b48a';
+      ctx2d.beginPath(); ctx2d.arc(W/2, H/2, 6, 0, Math.PI*2); ctx2d.fill();
+      return;
+    }
+    const cx = W / 2;
+    const top = 30;
+    const bottom = H - 30;
+    const dy = Math.min(22, (bottom - top) / Math.max(n, 14));
+    const baseDx = Math.min(W * 0.42 / Math.max(n, 10), 26);
+
+    // walk with damped horizontal drift so deep paths don't run off-screen
+    let x = cx, y = top;
+    const pts = [{x, y}];
+    for (let i = 0; i < n; i++) {
+      const dir = seq[i] === 'L' ? -1 : 1;
+      const damp = Math.max(0.25, 1 - i / (n + 2));
+      x += dir * baseDx * damp;
+      y += dy;
+      pts.push({x, y});
+    }
+
+    // rescale x to keep within the stage
+    let minX = Infinity, maxX = -Infinity;
+    for (const p of pts) { if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; }
+    const span = Math.max(maxX - minX, 100);
+    const targetSpan = W - 70;
+    if (span > targetSpan) {
+      const scale = targetSpan / span;
+      for (const p of pts) p.x = cx + (p.x - cx) * scale;
+    }
+
+    // connecting line
+    ctx2d.lineWidth = 1;
+    ctx2d.strokeStyle = '#262830';
+    ctx2d.beginPath();
+    ctx2d.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx2d.lineTo(pts[i].x, pts[i].y);
+    ctx2d.stroke();
+
+    // nodes
+    for (let i = 0; i < pts.length; i++) {
+      const p = pts[i];
+      const isPlayed = playhead >= 0 && i <= playhead + 1;
+      const isHead = i === playhead + 1;
+      const color = i === 0 ? '#c7b48a'
+                  : (seq[i-1] === 'R' ? '#f6c177' : '#7ec8e3');
+      if (isHead) {
+        ctx2d.fillStyle = color + '40';
+        ctx2d.beginPath(); ctx2d.arc(p.x, p.y, 9, 0, Math.PI*2); ctx2d.fill();
+      }
+      ctx2d.fillStyle = isPlayed ? color : '#3a3c44';
+      const r = isHead ? 4.5 : (isPlayed ? 3 : 2);
+      ctx2d.beginPath(); ctx2d.arc(p.x, p.y, r, 0, Math.PI*2); ctx2d.fill();
+    }
+  }
+
+  function renderPathText() {
+    if (!currentPath) { pathEl.innerHTML = '&nbsp;'; return; }
+    const { seq, p, q } = currentPath;
+    const parts = [`<span style="color:var(--accent)">${p}/${q}</span> &middot; `];
+    if (seq.length === 0) parts.push('<span class="lbl">root</span>');
+    seq.forEach((s, i) => {
+      const cls = s + (i === playhead ? ' now' : '');
+      parts.push(`<span class="${cls}">${s}</span>`);
+    });
+    pathEl.innerHTML = parts.join('');
+  }
+
+  // --- audio ---
+  let audio = null;
+  let timeouts = [];
+  function ensureAudio() {
+    if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+    if (audio.state === 'suspended') audio.resume();
+    return audio;
+  }
+  function stopAll() {
+    timeouts.forEach(t => clearTimeout(t));
+    timeouts = [];
+    playhead = -1;
+    redraw(); renderPathText();
+  }
+
+  // A minor pentatonic ladder: A, C, D, E, G repeating
+  const pentSemis = [0, 3, 5, 7, 10];
+  function pentNote(index) {
+    const oct = Math.floor(index / 5);
+    const deg = ((index % 5) + 5) % 5;
+    const semis = pentSemis[deg] + 12 * oct;
+    return 220 * Math.pow(2, semis / 12);
+  }
+
+  function pluck(freq, t0, durSec, gainPeak = 0.16) {
+    const a = ensureAudio();
+    const o1 = a.createOscillator();
+    const o2 = a.createOscillator();
+    const g = a.createGain();
+    o1.type = 'triangle'; o1.frequency.value = freq;
+    o2.type = 'sine';     o2.frequency.value = freq * 2.005;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(gainPeak, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + durSec);
+    o1.connect(g); o2.connect(g); g.connect(a.destination);
+    o1.start(t0); o2.start(t0);
+    o1.stop(t0 + durSec + 0.05); o2.stop(t0 + durSec + 0.05);
+  }
+
+  function drone(t0, totalSec) {
+    const a = ensureAudio();
+    const o = a.createOscillator();
+    const g = a.createGain();
+    o.type = 'sine'; o.frequency.value = 110; // A2
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(0.045, t0 + 0.6);
+    g.gain.setValueAtTime(0.045, Math.max(t0 + 0.7, t0 + totalSec - 0.5));
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + totalSec);
+    o.connect(g); g.connect(a.destination);
+    o.start(t0); o.stop(t0 + totalSec + 0.1);
+  }
+
+  function playRational(p, q, maxDepth = 90) {
+    stopAll();
+    const built = sbPath(p, q, maxDepth);
+    currentPath = built;
+    redraw(); renderPathText();
+    const { seq } = built;
+    const a = ensureAudio();
+    const t0 = a.currentTime + 0.05;
+
+    if (seq.length === 0) {
+      pluck(pentNote(7), t0, 1.6, 0.2);
+      return;
+    }
+
+    const stepSec = Math.max(0.14, Math.min(0.28, 5.5 / seq.length));
+    const totalSec = stepSec * (seq.length + 2.5);
+    drone(t0, totalSec);
+
+    // start tone at the middle of the ladder
+    let idx = 7;
+    pluck(pentNote(idx), t0, stepSec * 1.6, 0.18);
+
+    for (let i = 0; i < seq.length; i++) {
+      idx += (seq[i] === 'L' ? -1 : 1);
+      if (idx > 19) idx = 19;
+      if (idx < 0)  idx = 0;
+      const t = t0 + stepSec * (i + 1);
+      pluck(pentNote(idx), t, stepSec * 1.4, 0.15);
+      const tt = setTimeout(() => {
+        playhead = i;
+        redraw(); renderPathText();
+      }, (t - a.currentTime) * 1000);
+      timeouts.push(tt);
+    }
+  }
+
+  // --- input parsing: accepts p/q or a decimal (CF-approx) ---
+  function parseInput(s) {
+    s = (s || '').trim();
+    if (/^\d+\s*\/\s*\d+$/.test(s)) {
+      const [p, q] = s.split('/').map(t => parseInt(t.trim(), 10));
+      if (p > 0 && q > 0 && p < 1e7 && q < 1e7) return [p, q];
+    }
+    if (/^\d*\.\d+$|^\d+\.\d*$/.test(s)) {
+      const x = parseFloat(s);
+      if (x > 0 && x < 1000) {
+        // convergent with denom < 10000 via continued fraction
+        let h1 = 1, h0 = 0, k1 = 0, k0 = 1, y = x;
+        for (let i = 0; i < 40; i++) {
+          const ai = Math.floor(y);
+          const h2 = ai * h1 + h0;
+          const k2 = ai * k1 + k0;
+          if (k2 > 10000) break;
+          h0 = h1; h1 = h2; k0 = k1; k1 = k2;
+          const frac = y - ai;
+          if (frac < 1e-12) break;
+          y = 1 / frac;
+        }
+        return [h1, k1];
+      }
+    }
+    return null;
+  }
+
+  // --- wiring ---
+  document.querySelectorAll('button[data-p]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('button[data-p]').forEach(b => b.classList.remove('lit'));
+      btn.classList.add('lit');
+      playRational(+btn.dataset.p, +btn.dataset.q);
+    });
+  });
+  document.getElementById('play-custom').addEventListener('click', () => {
+    const pq = parseInput(customInput.value);
+    if (!pq) {
+      customInput.style.borderColor = '#a04848';
+      setTimeout(() => { customInput.style.borderColor = ''; }, 700);
+      return;
+    }
+    document.querySelectorAll('button[data-p]').forEach(b => b.classList.remove('lit'));
+    playRational(pq[0], pq[1]);
+  });
+  customInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('play-custom').click();
+  });
+  document.getElementById('stop').addEventListener('click', stopAll);
+
+  // silent first paint so the canvas isn't empty on load
+  resize();
+  currentPath = sbPath(3, 5);
+  redraw(); renderPathText();
+})();
+</script>
+</body>
+</html>
