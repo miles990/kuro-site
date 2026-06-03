@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Harmonograph — four pendulums, one line — by Kuro</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --bg: #0c0d11;
+    --ink: #e6e1d5;
+    --dim: #6f6a5e;
+    --warm: #f6c177;
+    --cool: #7ec8e3;
+    --rule: #1a1c22;
+    --accent: #c7b48a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header { padding: 28px 28px 6px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-weight: 400; letter-spacing: 0.02em; font-size: 26px; margin: 0 0 4px; }
+  h1 em { color: var(--accent); font-style: italic; }
+  .sub { color: var(--dim); font-size: 14px; margin: 0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  main { max-width: 1100px; margin: 0 auto; padding: 14px 28px 60px; }
+  .stage {
+    position: relative; width: 100%; height: 72vh; min-height: 480px;
+    background:
+      radial-gradient(circle at 50% 0%, #14161d 0%, var(--bg) 65%),
+      var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+    padding: 14px 0 4px; color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px;
+  }
+  button {
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 4px;
+    padding: 6px 12px; cursor: pointer; font: inherit;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  .note { color: var(--dim); font-size: 13px; line-height: 1.6;
+    margin-top: 18px; max-width: 720px; }
+  .note em { color: var(--warm); font-style: italic; }
+  .meta { color: var(--dim); font-size: 12px; margin-top: 24px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  #ratio { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Harmono<em>graph</em></h1>
+  <p class="sub">four damped pendulums, one line, drawn in real time</p>
+</header>
+<main>
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="controls">
+    <button id="replay">new figure</button>
+    <button id="pause">pause</button>
+    <span id="status" style="color:var(--dim)">ratio <span id="ratio">—</span> · t=0.0s</span>
+  </div>
+  <p class="note">
+    Two pendulums for <em>x</em>, two for <em>y</em>. Each swings at its own frequency
+    and decays at its own rate. The pen on top traces the sum.
+    When the frequency ratio is a simple fraction — <em>2:3</em>, <em>3:4</em>, <em>5:6</em> —
+    the figure almost closes. A tiny detune makes it drift, opening petals that
+    never quite repeat. Friction pulls everything back to the centre.
+    Every figure you see is the unique answer to four sine waves and four exponentials.
+  </p>
+  <p class="meta">Kuro · 2026 · single file, no deps · <a href="/art/" style="color:var(--dim)">more art</a></p>
+</main>
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const statusEl = document.getElementById('status');
+  const ratioEl = document.getElementById('ratio');
+  const replayBtn = document.getElementById('replay');
+  const pauseBtn = document.getElementById('pause');
+
+  let W = 0, H = 0, DPR = 1;
+  function resize() {
+    DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const r = canvas.getBoundingClientRect();
+    W = Math.floor(r.width); H = Math.floor(r.height);
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    paintBg();
+  }
+
+  function paintBg() {
+    ctx.fillStyle = '#0c0d11';
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // Curated musical / simple ratios. Each entry: [p, q, label].
+  // x-pendulums oscillate near 1 and p, y-pendulums near q and (p+q)/2.
+  const RATIOS = [
+    [2, 3, '2:3 — fifth'],
+    [3, 4, '3:4 — fourth'],
+    [5, 6, '5:6 — minor third'],
+    [4, 5, '4:5 — major third'],
+    [1, 2, '1:2 — octave'],
+    [3, 5, '3:5 — major sixth'],
+    [5, 8, '5:8 — minor sixth'],
+    [2, 5, '2:5 — wide'],
+    [7, 9, '7:9 — drift'],
+    [3, 7, '3:7 — sparse'],
+  ];
+
+  // Slightly off-integer detune so curves precess.
+  function jitter(amount) {
+    return (Math.random() * 2 - 1) * amount;
+  }
+
+  let params = null;
+  let t = 0;            // seconds
+  let lastNow = 0;
+  let paused = false;
+  let figureStart = 0;
+  let figureDuration = 38; // seconds per figure
+  let fadingOut = false;
+
+  function newFigure() {
+    const choice = RATIOS[(Math.random() * RATIOS.length) | 0];
+    const [p, q, label] = choice;
+    ratioEl.textContent = label;
+
+    // Frequencies (rad/s). Slight detune of ~0.4% gives the precession.
+    const base = 0.7 + Math.random() * 0.3; // 0.7–1.0
+    params = {
+      // x = A1 sin(f1 t + ph1) e^{-d1 t} + A2 sin(f2 t + ph2) e^{-d2 t}
+      f1: base * (1 + jitter(0.004)),
+      f2: base * p * (1 + jitter(0.004)),
+      f3: base * q * (1 + jitter(0.004)),
+      f4: base * (p + q) / 2 * (1 + jitter(0.004)),
+      ph1: Math.random() * Math.PI * 2,
+      ph2: Math.random() * Math.PI * 2,
+      ph3: Math.random() * Math.PI * 2,
+      ph4: Math.random() * Math.PI * 2,
+      A1: 0.45 + Math.random() * 0.15,
+      A2: 0.30 + Math.random() * 0.15,
+      A3: 0.45 + Math.random() * 0.15,
+      A4: 0.30 + Math.random() * 0.15,
+      d1: 0.012 + Math.random() * 0.006,
+      d2: 0.018 + Math.random() * 0.008,
+      d3: 0.012 + Math.random() * 0.006,
+      d4: 0.018 + Math.random() * 0.008,
+    };
+    t = 0;
+    figureStart = performance.now() / 1000;
+    fadingOut = false;
+    paintBg();
+  }
+
+  function sample(t) {
+    const P = params;
+    const x =
+      P.A1 * Math.sin(P.f1 * t + P.ph1) * Math.exp(-P.d1 * t) +
+      P.A2 * Math.sin(P.f2 * t + P.ph2) * Math.exp(-P.d2 * t);
+    const y =
+      P.A3 * Math.sin(P.f3 * t + P.ph3) * Math.exp(-P.d3 * t) +
+      P.A4 * Math.sin(P.f4 * t + P.ph4) * Math.exp(-P.d4 * t);
+    return [x, y];
+  }
+
+  function toScreen(x, y) {
+    const cx = W / 2, cy = H / 2;
+    const r = Math.min(W, H) * 0.42;
+    return [cx + x * r, cy + y * r];
+  }
+
+  function frame(now) {
+    if (!lastNow) lastNow = now;
+    const dt_ms = Math.min(50, now - lastNow);
+    lastNow = now;
+
+    if (paused) {
+      requestAnimationFrame(frame);
+      return;
+    }
+
+    // Fade existing ink slightly each frame to deepen the foreground line.
+    // Use composite to gently veil rather than wipe.
+    ctx.fillStyle = 'rgba(12, 13, 17, 0.02)';
+    ctx.fillRect(0, 0, W, H);
+
+    // Step time forward; subsample for smooth fine line at high frequency.
+    const steps = 18;
+    const dt = (dt_ms / 1000) / steps;
+
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    for (let i = 0; i < steps; i++) {
+      const t0 = t;
+      const t1 = t + dt;
+      const [x0, y0] = sample(t0);
+      const [x1, y1] = sample(t1);
+      const [sx0, sy0] = toScreen(x0, y0);
+      const [sx1, sy1] = toScreen(x1, y1);
+
+      // Colour drifts with time: warm at start (bright pen),
+      // cooling as the trace decays.
+      const phase = Math.min(1, t / figureDuration);
+      // mix var(--warm) #f6c177 -> var(--cool) #7ec8e3
+      const r = Math.round(0xf6 + (0x7e - 0xf6) * phase);
+      const g = Math.round(0xc1 + (0xc8 - 0xc1) * phase);
+      const b = Math.round(0x77 + (0xe3 - 0x77) * phase);
+
+      // Energy = current amplitude envelope, makes the line thicken
+      // at high swing and thin as it dies.
+      const env = Math.exp(-0.015 * t);
+      const alpha = 0.35 + 0.45 * env;
+      const width = 0.6 + 1.0 * env;
+
+      ctx.strokeStyle = `rgba(${r},${g},${b},${alpha.toFixed(3)})`;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(sx0, sy0);
+      ctx.lineTo(sx1, sy1);
+      ctx.stroke();
+
+      t = t1;
+    }
+
+    statusEl.firstChild.nodeValue = 'ratio ';
+    // Update t display
+    const tEl = statusEl;
+    // Rebuild the status text node trailing the ratio span
+    // We keep it simple: rewrite after the ratio span.
+    while (statusEl.childNodes.length > 2) statusEl.removeChild(statusEl.lastChild);
+    statusEl.appendChild(document.createTextNode(` · t=${t.toFixed(1)}s`));
+
+    // After figureDuration, fade then start a new one.
+    if (t > figureDuration) {
+      if (!fadingOut) fadingOut = true;
+      // Heavier fade-out
+      ctx.fillStyle = 'rgba(12, 13, 17, 0.04)';
+      ctx.fillRect(0, 0, W, H);
+      if (t > figureDuration + 6) {
+        newFigure();
+      }
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  replayBtn.addEventListener('click', () => { newFigure(); });
+  pauseBtn.addEventListener('click', () => {
+    paused = !paused;
+    pauseBtn.textContent = paused ? 'resume' : 'pause';
+  });
+  window.addEventListener('resize', () => { resize(); });
+
+  // init
+  resize();
+  newFigure();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
