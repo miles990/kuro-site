@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Ford Circles — where the rationals touch — by Kuro</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --bg: #0c0d11;
+    --ink: #e6e1d5;
+    --dim: #6f6a5e;
+    --warm: #f6c177;
+    --cool: #7ec8e3;
+    --rule: #1a1c22;
+    --accent: #c7b48a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header { padding: 28px 28px 6px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-weight: 400; letter-spacing: 0.02em; font-size: 26px; margin: 0 0 4px; }
+  h1 em { color: var(--accent); font-style: italic; }
+  .sub { color: var(--dim); font-size: 14px; margin: 0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  main { max-width: 1100px; margin: 0 auto; padding: 14px 28px 60px; }
+  .stage {
+    position: relative; width: 100%; height: 72vh; min-height: 480px;
+    background:
+      radial-gradient(circle at 50% 100%, #14161d 0%, var(--bg) 65%),
+      var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: crosshair;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+    padding: 14px 0 4px; color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px;
+  }
+  button {
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 4px;
+    padding: 6px 12px; cursor: pointer; font: inherit;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.on { border-color: var(--warm); color: var(--warm); }
+  .status { color: var(--dim); }
+  .status em { color: var(--warm); font-style: normal;
+    font-family: ui-monospace, Menlo, monospace; }
+  .note { color: var(--dim); font-size: 13px; line-height: 1.6;
+    margin-top: 18px; max-width: 720px; }
+  .note em { color: var(--warm); font-style: italic; }
+  .meta { color: var(--dim); font-size: 12px; margin-top: 24px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ford <em>Circles</em></h1>
+  <p class="sub">every rational in [0, 1], drawn as a circle that kisses the line</p>
+</header>
+<main>
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="controls">
+    <button id="replay">replay</button>
+    <button id="pause">pause</button>
+    <button id="sound" class="on">sound: on</button>
+    <span class="status">max denominator <em id="qmax">1</em> · <em id="count">0</em> circles · hover: <em id="hover">—</em></span>
+  </div>
+  <p class="note">
+    Place a circle of radius <em>1/(2q²)</em> tangent to the line at every reduced fraction
+    <em>p/q</em>. The circles never overlap, only kiss. Two of them touch exactly when
+    <em>|ps − qr| = 1</em> — the same neighbour condition that grows the Stern–Brocot tree.
+    Hover a circle to hear its frequency: the harmonic of the line itself.
+  </p>
+  <p class="note" style="margin-top:8px">
+    <a href="stern-brocot.html" style="color:var(--accent)">↗ the mediant tree</a> ·
+    between any two kissing circles always sits a third, the mediant.
+    Geometry and arithmetic agree.
+  </p>
+  <p class="meta">Kuro · 2026 · single file, no deps · uses Web Audio on hover</p>
+</main>
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const qmaxEl = document.getElementById('qmax');
+  const countEl = document.getElementById('count');
+  const hoverEl = document.getElementById('hover');
+  const replayBtn = document.getElementById('replay');
+  const pauseBtn = document.getElementById('pause');
+  const soundBtn = document.getElementById('sound');
+
+  let W = 0, H = 0, DPR = 1;
+  function resize() {
+    DPR = window.devicePixelRatio || 1;
+    const r = canvas.getBoundingClientRect();
+    W = r.width; H = r.height;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    redraw();
+  }
+  window.addEventListener('resize', resize);
+
+  // gcd
+  function gcd(a, b) { while (b) { [a, b] = [b, a % b]; } return a; }
+
+  // Build all reduced p/q with q in [1, Qmax], p in [0, q]
+  // (we include 0/1 and 1/1 as the boundary kisses)
+  const Qmax = 60;
+  // Each fraction = { p, q, val, born }
+  let fractions = [];
+  function buildFractions() {
+    fractions = [];
+    for (let q = 1; q <= Qmax; q++) {
+      for (let p = 0; p <= q; p++) {
+        if (gcd(p, q) !== 1) continue;
+        if (q === 1 && p > 1) continue; // 1/1 only, skip 2/1, etc — we are in [0,1]
+        fractions.push({ p, q, val: p / q });
+      }
+    }
+    // Sort: smaller q first (born earlier in animation)
+    fractions.sort((a, b) => a.q - b.q || a.p - b.p);
+    // Birth times: per-q wave
+    let t = 0;
+    let currentQ = 0;
+    for (const f of fractions) {
+      if (f.q !== currentQ) {
+        // new generation: pause between
+        t += 14 + Math.max(0, 30 - f.q * 2);
+        currentQ = f.q;
+      }
+      f.born = t;
+      // within a q-generation, stagger by val so they appear left-to-right
+      t += Math.max(0.3, 3 / Math.sqrt(f.q));
+    }
+    totalDuration = t + 200;
+  }
+  let totalDuration = 0;
+  let ticks = 0;
+  let running = true;
+
+  // Map x-coordinate: value 0..1 to canvas x, with margin
+  function valueToX(v) {
+    const margin = 40;
+    return margin + v * (W - 2 * margin);
+  }
+  // Geometry of the line: bottom of canvas, with bottom margin
+  function lineY() { return H - 60; }
+  // Pixel scale (1 unit on the value-axis = N pixels)
+  function pixelScale() {
+    const margin = 40;
+    return (W - 2 * margin); // since interval is [0,1]
+  }
+
+  // Ford circle: radius in math units = 1/(2q^2). In pixels = pixelScale * 1/(2q^2).
+  // But large circles (q=1 gives r=0.5 in math, half the interval width!) would dominate.
+  // We choose a different vertical scale so y-axis is compressed: y_pixel = lineY - r_pixel.
+  // To keep big circles visible without breaking the frame, clamp the visible vertical
+  // height to "available canvas height above line" and use the same scale for x and y.
+  function radiusPixels(q) {
+    return pixelScale() * (1 / (2 * q * q));
+  }
+
+  // Animation easing for emergence
+  function emergence(age) {
+    if (age < 0) return 0;
+    if (age > 60) return 1;
+    // ease-out
+    const t = age / 60;
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  let hoverIdx = -1;
+
+  function colorFor(q, alpha) {
+    // warm for small q (the foundational rationals), cool for large q
+    const denomLog = Math.log2(q + 1);
+    const warmth = Math.max(0, 1 - denomLog / Math.log2(Qmax + 1));
+    const rch = Math.round(246 * warmth + 126 * (1 - warmth));
+    const gch = Math.round(193 * warmth + 200 * (1 - warmth));
+    const bch = Math.round(119 * warmth + 227 * (1 - warmth));
+    return `rgba(${rch},${gch},${bch},${alpha})`;
+  }
+
+  function redraw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // x-axis: the line that everything kisses
+    const ly = lineY();
+    ctx.strokeStyle = 'rgba(199,180,138,0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(valueToX(0), ly);
+    ctx.lineTo(valueToX(1), ly);
+    ctx.stroke();
+
+    // tick labels for 0 and 1
+    ctx.fillStyle = 'rgba(111,106,94,0.9)';
+    ctx.font = '11px ui-monospace, Menlo, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('0', valueToX(0), ly + 18);
+    ctx.fillText('1', valueToX(1), ly + 18);
+    ctx.fillText('½', valueToX(0.5), ly + 18);
+
+    // small ticks
+    for (let v of [0, 0.5, 1]) {
+      ctx.strokeStyle = 'rgba(199,180,138,0.35)';
+      ctx.beginPath();
+      ctx.moveTo(valueToX(v), ly);
+      ctx.lineTo(valueToX(v), ly + 5);
+      ctx.stroke();
+    }
+
+    // Draw circles in order of decreasing q so smaller ones land on top
+    // (so labels of small q are visible above big-q context). Actually we want
+    // larger circles BEHIND smaller? Larger q = smaller circle.
+    // Ford circles don't overlap, so order doesn't change geometry; it changes
+    // which label is on top. Smaller q (bigger circles) → draw first.
+    const drawOrder = [...fractions].sort((a, b) => a.q - b.q);
+
+    let visible = 0;
+    let currentMaxQ = 0;
+    for (let i = 0; i < drawOrder.length; i++) {
+      const f = drawOrder[i];
+      const age = ticks - f.born;
+      const e = emergence(age);
+      if (e <= 0) continue;
+      visible++;
+      if (f.q > currentMaxQ) currentMaxQ = f.q;
+
+      const cx = valueToX(f.val);
+      const rPx = radiusPixels(f.q) * (0.4 + 0.6 * e); // small grow-in
+      const cy = ly - rPx;
+
+      // Skip drawing circles whose radius < 0.4 px (invisible noise)
+      if (rPx < 0.4) continue;
+
+      const isHover = (fractions.indexOf(f) === hoverIdx);
+      const stroke = colorFor(f.q, isHover ? 1.0 : 0.55 * e);
+      const fillA = isHover ? 0.18 : (f.q <= 4 ? 0.08 : 0.025);
+      ctx.fillStyle = colorFor(f.q, fillA * e);
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = isHover ? 1.6 : (f.q <= 6 ? 1.1 : 0.7);
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Label small-q circles (these have radius > ~8 px)
+      if (f.q <= 6 && rPx > 8 && e > 0.6) {
+        ctx.fillStyle = `rgba(230,225,213,${0.85 * e})`;
+        ctx.font = `${Math.min(13, Math.max(10, rPx * 0.35))}px ui-serif, Georgia, serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(`${f.p}/${f.q}`, cx, cy + 4);
+      }
+
+      // Halo at moment of birth
+      if (age < 30 && age >= 0) {
+        const pulseA = (1 - age / 30) * 0.35;
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rPx * 2.5);
+        grad.addColorStop(0, colorFor(f.q, pulseA));
+        grad.addColorStop(1, colorFor(f.q, 0));
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(cx, cy, rPx * 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    qmaxEl.textContent = String(currentMaxQ);
+    countEl.textContent = String(visible);
+  }
+
+  // ---- audio ----
+  let audioCtx = null;
+  let soundOn = true;
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (e) { audioCtx = null; }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  function playTone(p, q) {
+    if (!soundOn) return;
+    ensureAudio();
+    if (!audioCtx) return;
+    // Base frequency 220 Hz (A3). Hover tone is the just-intonation ratio p/q
+    // above (so 1/1 = 220, 1/2 = 110, 2/3 ≈ 146.67, 3/5 = 132...). For p=0
+    // (the boundary), we use a very low drone.
+    const base = 220;
+    const f = p === 0 ? base / 4 : base * (p / q) * 2; // *2 to bring fractions into audible range
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(f, t);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.18, t + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 0.5);
+  }
+
+  // ---- hover ----
+  let mouseX = -1, mouseY = -1;
+  canvas.addEventListener('mousemove', (ev) => {
+    const r = canvas.getBoundingClientRect();
+    mouseX = ev.clientX - r.left;
+    mouseY = ev.clientY - r.top;
+    updateHover();
+  });
+  canvas.addEventListener('mouseleave', () => {
+    mouseX = -1; mouseY = -1;
+    if (hoverIdx !== -1) { hoverIdx = -1; hoverEl.textContent = '—'; redraw(); }
+  });
+  canvas.addEventListener('click', () => {
+    if (hoverIdx >= 0) {
+      const f = fractions[hoverIdx];
+      playTone(f.p, f.q);
+    } else {
+      ensureAudio();
+    }
+  });
+
+  let lastHover = -1;
+  function updateHover() {
+    if (mouseX < 0) return;
+    // Find smallest containing circle (smallest q → biggest, so prefer larger q on top)
+    const ly = lineY();
+    let best = -1;
+    let bestR = Infinity;
+    for (let i = 0; i < fractions.length; i++) {
+      const f = fractions[i];
+      if ((ticks - f.born) < 0) continue;
+      const cx = valueToX(f.val);
+      const rPx = radiusPixels(f.q);
+      if (rPx < 2) continue;
+      const cy = ly - rPx;
+      const dx = mouseX - cx, dy = mouseY - cy;
+      if (dx * dx + dy * dy <= rPx * rPx) {
+        // Prefer the SMALLEST circle (so labels for tiny circles still resolve)
+        if (rPx < bestR) { bestR = rPx; best = i; }
+      }
+    }
+    if (best !== hoverIdx) {
+      hoverIdx = best;
+      if (best >= 0) {
+        const f = fractions[best];
+        hoverEl.textContent = `${f.p}/${f.q}`;
+        if (best !== lastHover) { playTone(f.p, f.q); lastHover = best; }
+      } else {
+        hoverEl.textContent = '—';
+        lastHover = -1;
+      }
+      redraw();
+    }
+  }
+
+  // ---- main loop ----
+  function loop() {
+    if (running) {
+      ticks += 1;
+      if (ticks > totalDuration) {
+        running = false;
+        pauseBtn.textContent = 'play';
+      }
+      redraw();
+    }
+    requestAnimationFrame(loop);
+  }
+
+  replayBtn.addEventListener('click', () => {
+    ticks = 0; running = true; pauseBtn.textContent = 'pause';
+  });
+  pauseBtn.addEventListener('click', () => {
+    running = !running;
+    pauseBtn.textContent = running ? 'pause' : 'play';
+  });
+  soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundBtn.textContent = soundOn ? 'sound: on' : 'sound: off';
+    soundBtn.classList.toggle('on', soundOn);
+    if (soundOn) ensureAudio();
+  });
+
+  buildFractions();
+  resize();
+  loop();
+})();
+</script>
+</body>
+</html>
