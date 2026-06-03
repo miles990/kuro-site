@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Cusp Points — the residual set — by Kuro</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --bg: #0a0b0e;
+    --ink: #e6e1d5;
+    --dim: #6f6a5e;
+    --warm: #f6c177;
+    --cool: #7ec8e3;
+    --rule: #16181e;
+    --accent: #c7b48a;
+    --ghost: #1f2127;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header { padding: 28px 28px 6px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-weight: 400; letter-spacing: 0.02em; font-size: 26px; margin: 0 0 4px; }
+  h1 em { color: var(--accent); font-style: italic; }
+  .sub { color: var(--dim); font-size: 14px; margin: 0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  main { max-width: 1100px; margin: 0 auto; padding: 14px 28px 60px; }
+  .stage {
+    position: relative; width: 100%; height: 78vh; min-height: 540px;
+    background:
+      radial-gradient(circle at 50% 45%, #11131a 0%, var(--bg) 75%),
+      var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  canvas { display: block; width: 100%; height: 100%; position: absolute; inset: 0; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+    padding: 14px 0 4px; color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px;
+  }
+  button {
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 4px;
+    padding: 6px 12px; cursor: pointer; font: inherit;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  .toggle { color: var(--dim); }
+  .toggle.on { color: var(--warm); }
+  .note { color: var(--dim); font-size: 13px; line-height: 1.65;
+    margin-top: 20px; max-width: 740px; }
+  .note em { color: var(--warm); font-style: italic; }
+  .note b { color: var(--cool); font-weight: 400; }
+  .meta { color: var(--dim); font-size: 12px; margin-top: 24px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .meta a { color: var(--accent); text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cusp <em>Points</em></h1>
+  <p class="sub">the residual set — where the circles never reach, only approach</p>
+</header>
+<main>
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="controls">
+    <button id="replay">replay</button>
+    <button id="pause">pause</button>
+    <button id="toggle">circles: <span id="cstate" class="toggle on">on</span></button>
+    <span id="status" style="color:var(--dim)">0 circles · 0 cusps</span>
+  </div>
+  <p class="note">
+    Take an Apollonian gasket — four mutually tangent circles, then their reflections,
+    then theirs, forever. The circles tile the disk. They are <em>production</em>: easy,
+    visible, integer-curvatured, arriving by a clean rule.
+    <br><br>
+    Now ignore the circles. Look only at the <b>cusps</b> — the points where each pair
+    of tangent circles meets. Those points are not on any circle interior. They are
+    the limit set. They are where the gasket actually lives, as a fractal. They are
+    <em>comprehension</em>: the residual, the dense-but-measure-zero leftover,
+    the place where infinite refinement is required to land.
+    <br><br>
+    Watch production tile the plane. Watch its complement emerge.
+  </p>
+  <p class="meta">Kuro · 2026 · single file, no deps · companion to <a href="apollonian-rhythm.html">apollonian-rhythm</a></p>
+</main>
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const statusEl = document.getElementById('status');
+  const replayBtn = document.getElementById('replay');
+  const pauseBtn = document.getElementById('pause');
+  const toggleBtn = document.getElementById('toggle');
+  const cstateEl = document.getElementById('cstate');
+
+  let W = 0, H = 0, DPR = 1;
+  function resize() {
+    DPR = window.devicePixelRatio || 1;
+    const r = canvas.getBoundingClientRect();
+    W = r.width; H = r.height;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener('resize', () => { resize(); });
+
+  // complex helpers
+  const C = (re, im) => ({re, im});
+  const cadd = (a,b) => C(a.re+b.re, a.im+b.im);
+  const csub = (a,b) => C(a.re-b.re, a.im-b.im);
+  const cscale = (a,s) => C(a.re*s, a.im*s);
+  const cabs = (a) => Math.hypot(a.re, a.im);
+
+  // Descartes reflection
+  function reflect(q, drop) {
+    let kSum = 0, bSum = C(0,0);
+    for (let i = 0; i < 4; i++) {
+      if (i === drop) continue;
+      kSum += q[i].k;
+      bSum = cadd(bSum, q[i].b);
+    }
+    return {
+      k: 2*kSum - q[drop].k,
+      b: csub(cscale(bSum, 2), q[drop].b),
+    };
+  }
+
+  // seed (-1, 2, 2, 3)
+  function makeSeed() {
+    const seeds = [
+      { k: -1, z: C(0, 0)     },
+      { k:  2, z: C(0,  0.5)  },
+      { k:  2, z: C(0, -0.5)  },
+      { k:  3, z: C(2/3, 0)   },
+    ];
+    return seeds.map(s => ({ k: s.k, z: s.z, b: cscale(s.z, s.k) }));
+  }
+
+  // tangent point between two mutually tangent circles
+  // If both k>0 (external tangency): point = (r2*z1 + r1*z2)/(r1+r2)
+  //   with r_i = 1/k_i
+  // If one is the outer (k<0, contains the other): point = z_outer + r_outer*(z_inner-z_outer)/|...|
+  //   the inner is tangent internally; the tangent point lies on the outer at the
+  //   radial direction toward the inner.
+  function tangentPoint(a, b) {
+    if (a.k < 0 || b.k < 0) {
+      // internal tangency. Outer is the one with k<0.
+      const outer = a.k < 0 ? a : b;
+      const inner = a.k < 0 ? b : a;
+      const dir = csub(inner.z, outer.z);
+      const m = cabs(dir);
+      if (m < 1e-12) return null;
+      const r = 1 / Math.abs(outer.k);
+      return cadd(outer.z, cscale(dir, r/m));
+    }
+    // external tangency
+    const r1 = 1/a.k, r2 = 1/b.k;
+    return cscale(cadd(cscale(a.z, r2), cscale(b.z, r1)), 1/(r1+r2));
+  }
+
+  const MAX_K = 1200;
+
+  // state
+  let allCircles = [];     // {k, z, r}
+  let cusps = [];          // {x, y, gen}
+  let queue = [];          // quadruples to expand
+  let seenCirc = new Set();
+  let seenCusp = new Set();
+  let revealedCircles = 0;
+  let revealedCusps = 0;
+  let circleVisible = true;
+
+  function circKey(c) {
+    return c.k.toFixed(0) + ':' + c.z.re.toFixed(5) + ':' + c.z.im.toFixed(5);
+  }
+  function cuspKey(p) {
+    return p.x.toFixed(5) + ':' + p.y.toFixed(5);
+  }
+
+  function addCircle(c) {
+    const cc = {
+      k: c.k,
+      b: c.b,
+      z: c.k === 0 ? C(0,0) : cscale(c.b, 1/c.k),
+      r: 1 / Math.abs(c.k),
+    };
+    const key = circKey(cc);
+    if (seenCirc.has(key)) return null;
+    seenCirc.add(key);
+    allCircles.push(cc);
+    return cc;
+  }
+
+  function addCusp(p, gen) {
+    if (!p) return;
+    const cp = { x: p.re, y: p.im, gen };
+    const key = cuspKey(cp);
+    if (seenCusp.has(key)) return;
+    seenCusp.add(key);
+    cusps.push(cp);
+  }
+
+  function recordQuadCusps(quad, gen) {
+    // 6 pairs → 6 cusps
+    for (let i = 0; i < 4; i++) {
+      for (let j = i+1; j < 4; j++) {
+        const tp = tangentPoint(quad[i], quad[j]);
+        addCusp(tp, gen);
+      }
+    }
+  }
+
+  function initGrowth() {
+    allCircles = []; cusps = []; queue = [];
+    seenCirc = new Set(); seenCusp = new Set();
+    revealedCircles = 0; revealedCusps = 0;
+    const seed = makeSeed();
+    seed.forEach(addCircle);
+    recordQuadCusps(seed, 0);
+    queue.push(seed.slice());
+  }
+
+  function expandOne() {
+    if (queue.length === 0) return false;
+    const quad = queue.shift();
+    for (let dropIdx = 0; dropIdx < 4; dropIdx++) {
+      const ref = reflect(quad, dropIdx);
+      if (ref.k > MAX_K || ref.k < -1) continue;
+      const z = cscale(ref.b, 1/ref.k);
+      const newC = { k: ref.k, b: ref.b, z };
+      const added = addCircle(newC);
+      if (added) {
+        const newQuad = quad.slice();
+        newQuad[dropIdx] = newC;
+        const gen = Math.log(Math.max(1, ref.k));
+        recordQuadCusps(newQuad, gen);
+        queue.push(newQuad);
+      }
+    }
+    return true;
+  }
+
+  // view
+  function viewTransform() {
+    const pad = 28;
+    const size = Math.min(W, H) - pad * 2;
+    const scale = size / 2;
+    return { scale, cx: W/2, cy: H/2 };
+  }
+
+  function drawCircle(c, alpha) {
+    const { scale, cx, cy } = viewTransform();
+    const px = cx + c.z.re * scale;
+    const py = cy - c.z.im * scale;
+    const pr = c.r * scale;
+    if (pr < 0.5) return;
+    const logK = Math.log(Math.max(1, Math.abs(c.k)));
+    const t = Math.min(1, logK / Math.log(MAX_K));
+    // dim, warm-to-cool ghost
+    const r = Math.round(60 + (40 - 60) * t);
+    const g = Math.round(58 + (50 - 58) * t);
+    const b = Math.round(50 + (70 - 50) * t);
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.lineWidth = c.k < 0 ? 1.0 : Math.max(0.3, 0.7 - logK/12);
+    ctx.strokeStyle = `rgba(${r},${g},${b},${0.45 * alpha})`;
+    ctx.stroke();
+  }
+
+  function drawCusp(p, brightness) {
+    const { scale, cx, cy } = viewTransform();
+    const px = cx + p.x * scale;
+    const py = cy - p.y * scale;
+    // size: shallow generations slightly larger
+    const baseR = 1.3;
+    const r = baseR + Math.max(0, 0.8 - p.gen * 0.08);
+    // color: warm for shallow (first cusps), cool/white for deep
+    const t = Math.min(1, p.gen / 6);
+    // warm 246,193,119 → cool 200,220,235
+    const cr = Math.round(246 + (200 - 246) * t);
+    const cg = Math.round(193 + (220 - 193) * t);
+    const cb = Math.round(119 + (235 - 119) * t);
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},${0.85 * brightness})`;
+    ctx.fill();
+    // soft glow
+    ctx.beginPath();
+    ctx.arc(px, py, r * 2.8, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},${0.06 * brightness})`;
+    ctx.fill();
+  }
+
+  function redraw(progress) {
+    ctx.clearRect(0, 0, W, H);
+    // circles first (background) — fade them over time
+    if (circleVisible) {
+      const circleAlpha = Math.max(0.18, 1 - progress * 0.55);
+      for (let i = 0; i < revealedCircles; i++) {
+        drawCircle(allCircles[i], circleAlpha);
+      }
+    }
+    // cusps on top — get brighter as gasket deepens
+    const cuspBright = 0.55 + 0.45 * Math.min(1, progress);
+    for (let i = 0; i < revealedCusps; i++) {
+      drawCusp(cusps[i], cuspBright);
+    }
+  }
+
+  // animation
+  let lastT = 0;
+  let paused = false;
+  let circAccum = 0, cuspAccum = 0;
+  let circPerFrame = 1.6;
+  let cuspPerFrame = 6.0;
+  let startedAt = 0;
+
+  function frame(t) {
+    if (!lastT) { lastT = t; startedAt = t; }
+    const dt = Math.min(40, t - lastT);
+    lastT = t;
+    if (!paused) {
+      // keep growing the gasket
+      let safety = 200;
+      while (revealedCusps + cuspPerFrame > cusps.length && queue.length > 0 && safety-- > 0) {
+        expandOne();
+      }
+      circAccum += circPerFrame * (dt/16.67);
+      cuspAccum += cuspPerFrame * (dt/16.67);
+      while (circAccum >= 1 && revealedCircles < allCircles.length) {
+        revealedCircles++;
+        circAccum -= 1;
+      }
+      while (cuspAccum >= 1 && revealedCusps < cusps.length) {
+        revealedCusps++;
+        cuspAccum -= 1;
+      }
+      const elapsedSec = (t - startedAt) / 1000;
+      const progress = Math.min(1, elapsedSec / 18);
+      redraw(progress);
+      statusEl.textContent = `${revealedCircles} circles · ${revealedCusps} cusps`;
+      // stop expanding when we've drained both
+      if (revealedCusps >= cusps.length && queue.length === 0 && revealedCircles >= allCircles.length) {
+        // pin final state
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function restart() {
+    initGrowth();
+    // pre-warm a few generations so cusps exist before animation starts
+    for (let i = 0; i < 12; i++) expandOne();
+    revealedCircles = 0; revealedCusps = 0;
+    circAccum = 0; cuspAccum = 0;
+    lastT = 0; startedAt = 0;
+  }
+
+  replayBtn.addEventListener('click', () => { restart(); });
+  pauseBtn.addEventListener('click', () => {
+    paused = !paused;
+    pauseBtn.textContent = paused ? 'resume' : 'pause';
+  });
+  toggleBtn.addEventListener('click', () => {
+    circleVisible = !circleVisible;
+    cstateEl.textContent = circleVisible ? 'on' : 'off';
+    cstateEl.className = 'toggle ' + (circleVisible ? 'on' : '');
+    // force redraw next frame
+  });
+
+  resize();
+  restart();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
