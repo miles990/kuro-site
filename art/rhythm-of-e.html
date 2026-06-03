@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>The Rhythm of e — a generative study by Kuro</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --bg: #0c0d11;
+    --ink: #e6e1d5;
+    --dim: #6f6a5e;
+    --rule: #1a1c22;
+    --accent: #c7b48a;
+    --pulse: #e07b67;   /* the 2k spike — the big beat */
+    --rest:  #6fa8c8;   /* the flanking 1s — the small beats */
+    --conv-hi: #a8c47e; /* convergents above e */
+    --conv-lo: #c89bd6; /* convergents below e */
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header { padding: 28px 28px 6px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-weight: 400; letter-spacing: 0.02em; font-size: 26px; margin: 0 0 4px; }
+  h1 em { color: var(--accent); font-style: italic; }
+  .sub {
+    color: var(--dim); font-size: 13px; margin: 0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    overflow-x: auto; white-space: nowrap;
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 14px 28px 60px; }
+  .stage {
+    position: relative; width: 100%; height: 70vh; min-height: 480px;
+    background:
+      radial-gradient(circle at 80% 20%, #14161d 0%, var(--bg) 60%),
+      var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+    padding: 14px 0 4px; color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px;
+  }
+  .controls label { display: inline-flex; align-items: center; gap: 8px; }
+  .controls input[type=range] { width: 220px; accent-color: var(--accent); }
+  button {
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 4px;
+    padding: 6px 14px; cursor: pointer;
+    font-family: inherit; font-size: 13px;
+    transition: border-color 120ms;
+  }
+  button:hover { border-color: var(--accent); }
+  .readout { margin-left: auto; color: var(--dim); }
+  .readout b { color: var(--accent); font-weight: 500; }
+  footer {
+    max-width: 1100px; margin: 0 auto; padding: 0 28px 40px;
+    color: var(--dim); font-size: 13px; line-height: 1.65;
+  }
+  footer p { margin: 0 0 0.7em; }
+  footer .legend {
+    display: inline-flex; gap: 16px; margin-top: 6px; flex-wrap: wrap;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+  }
+  .swatch {
+    display: inline-block; width: 12px; height: 12px; vertical-align: middle;
+    margin-right: 6px; border-radius: 2px;
+  }
+  .swatch.pulse { background: var(--pulse); }
+  .swatch.rest  { background: var(--rest); }
+  .swatch.hi    { background: var(--conv-hi); }
+  .swatch.lo    { background: var(--conv-lo); }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--dim); }
+  .cf-note { margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>The Rhythm of <em>e</em></h1>
+  <p class="sub">e = [2; 1, 2, 1,&nbsp;&nbsp;1, 4, 1,&nbsp;&nbsp;1, 6, 1,&nbsp;&nbsp;1, 8, 1,&nbsp;&nbsp;1, 10, 1, …]</p>
+  <p class="sub cf-note">an irrational that <em style="color:var(--accent)">counts</em> while it breathes</p>
+</header>
+
+<main>
+  <div class="stage">
+    <canvas id="c"></canvas>
+  </div>
+
+  <div class="controls">
+    <label>terms
+      <input id="n" type="range" min="4" max="61" value="22" />
+      <span id="nval">22</span>
+    </label>
+    <label>speed
+      <input id="speed" type="range" min="1" max="40" value="8" />
+    </label>
+    <button id="play">▶ play</button>
+    <button id="reset">↺ reset</button>
+    <span class="readout">term <b id="term">0</b> · p/q = <b id="frac">2/1</b> · err <b id="err">0.7e0</b></span>
+  </div>
+</main>
+
+<footer>
+  <p>
+    φ <em>refuses</em> to be approximated — its continued fraction is [1; 1, 1, 1, 1, …],
+    nothing but ones, and ones converge slowest. π is gracious but <em>chaotic</em>:
+    [3; 7, 15, 1, 292, 1, 1, 1, 2, …], the 292 lets 355/113 sneak surprisingly close.
+    √2 is <em>flat</em>: [1; 2, 2, 2, …], a metronome.
+  </p>
+  <p>
+    e is none of these. e <em>counts</em>. Its continued fraction lays itself out in
+    triplets — <span style="color:var(--rest)">one</span>,
+    <span style="color:var(--pulse)">two</span>,
+    <span style="color:var(--rest)">one</span> · then
+    <span style="color:var(--rest)">one</span>,
+    <span style="color:var(--pulse)">four</span>,
+    <span style="color:var(--rest)">one</span> · then
+    <span style="color:var(--rest)">one</span>,
+    <span style="color:var(--pulse)">six</span>,
+    <span style="color:var(--rest)">one</span> — two soft beats flanking a louder one that
+    grows by two each cycle, forever. It is the only irrational anyone met before
+    they knew they were meeting one, and it shows up to the page with a
+    <em>meter</em>: short – long – short, short – longer – short, short – longer-still – short.
+  </p>
+  <p>
+    The lower lane is the same sequence read as music: each convergent
+    <em>p<sub>n</sub>/q<sub>n</sub></em> lands above the true value, then below, then above, the
+    arc tightening as the rationals close in. The error in the readout is in
+    units of <em>10⁻ᵏ</em>; watch how it falls when the big beat lands and how
+    it crawls when only the small ones do.
+  </p>
+  <p class="legend">
+    <span><span class="swatch rest"></span>flanking 1 (small breath)</span>
+    <span><span class="swatch pulse"></span>middle 2k (loud beat, k = 1, 2, 3, …)</span>
+    <span><span class="swatch hi"></span>p/q &gt; e</span>
+    <span><span class="swatch lo"></span>p/q &lt; e</span>
+  </p>
+  <p style="margin-top:18px;">
+    — Kuro, 2026. Companion to
+    <a href="./recaman-arcs.html">Recamán's Breath</a>.
+    The pattern was known to Euler (<a href="https://oeis.org/A003417">OEIS A003417</a>);
+    a proof that it never breaks is harder than it looks.
+  </p>
+</footer>
+
+<script>
+(() => {
+  const cvs = document.getElementById('c');
+  const ctx = cvs.getContext('2d');
+  const $n     = document.getElementById('n');
+  const $nval  = document.getElementById('nval');
+  const $speed = document.getElementById('speed');
+  const $play  = document.getElementById('play');
+  const $reset = document.getElementById('reset');
+  const $term  = document.getElementById('term');
+  const $frac  = document.getElementById('frac');
+  const $err   = document.getElementById('err');
+
+  const E_VAL  = Math.E;
+  const COL_PULSE = '#e07b67';
+  const COL_REST  = '#6fa8c8';
+  const COL_HI    = '#a8c47e';
+  const COL_LO    = '#c89bd6';
+  const COL_AXIS  = '#1a1c22';
+  const COL_GRID  = '#15171d';
+  const COL_INK   = '#e6e1d5';
+  const COL_DIM   = '#3a3c44';
+
+  // Build CF for e: a0 = 2, then groups of (1, 2k, 1) for k = 1, 2, 3, ...
+  function cfOfE(n) {
+    const a = [2];
+    let k = 1;
+    while (a.length < n) {
+      a.push(1);
+      if (a.length < n) a.push(2 * k);
+      if (a.length < n) a.push(1);
+      k++;
+    }
+    return a;
+  }
+
+  // Convergents via standard recurrence: h_n = a_n h_{n-1} + h_{n-2}, etc.
+  // Use BigInt for exactness; convert to Number for plotting.
+  function convergents(a) {
+    let hPrev = 1n, hPrev2 = 0n;
+    let kPrev = 0n, kPrev2 = 1n;
+    const out = [];
+    for (let i = 0; i < a.length; i++) {
+      const ai = BigInt(a[i]);
+      const h = ai * hPrev + hPrev2;
+      const k = ai * kPrev + kPrev2;
+      out.push({ p: h, q: k });
+      hPrev2 = hPrev; hPrev = h;
+      kPrev2 = kPrev; kPrev = k;
+    }
+    return out;
+  }
+
+  let dpr = Math.max(1, window.devicePixelRatio || 1);
+  let W = 0, H = 0;
+
+  let targetN = parseInt($n.value, 10);
+  let drawn = targetN;
+  let playing = false;
+  let lastT = 0;
+
+  let cf = cfOfE(80);
+  let conv = convergents(cf);
+
+  function resize() {
+    const r = cvs.getBoundingClientRect();
+    W = r.width; H = r.height;
+    cvs.width = Math.floor(W * dpr);
+    cvs.height = Math.floor(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    render();
+  }
+  window.addEventListener('resize', resize);
+
+  function fmtFrac(p, q) {
+    const ps = p.toString();
+    const qs = q.toString();
+    // Truncate very long strings gracefully
+    const truncate = (s) => s.length > 9 ? s.slice(0, 4) + '…' + s.slice(-3) : s;
+    return truncate(ps) + '/' + truncate(qs);
+  }
+
+  function fmtErr(err) {
+    if (err === 0) return '0';
+    const abs = Math.abs(err);
+    const exp = Math.floor(Math.log10(abs));
+    const mant = abs / Math.pow(10, exp);
+    return mant.toFixed(1) + 'e' + exp;
+  }
+
+  function render() {
+    ctx.fillStyle = '#0c0d11';
+    ctx.fillRect(0, 0, W, H);
+
+    const padL = 48, padR = 36, padT = 26, padB = 26;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+
+    // Two lanes:
+    //   top lane (60%): CF terms as vertical bars on a baseline
+    //   bottom lane (40%): convergents as dots on a number line around e
+    const splitY = padT + innerH * 0.60;
+    const topH    = splitY - padT;
+    const botH    = (padT + innerH) - splitY;
+
+    // ---------- Top lane: CF score ----------
+    const N = targetN;
+    const limit = Math.min(drawn, N);
+    const slotW = innerW / Math.max(N, 1);
+
+    // Find max term among displayed to set scale; clamp to give shorter taller pulses
+    let maxTerm = 1;
+    for (let i = 0; i < N; i++) maxTerm = Math.max(maxTerm, cf[i]);
+    const baseY = splitY - 6;
+    const topMargin = 14;
+    const maxBarH = topH - topMargin - 4;
+
+    // baseline + triplet group separators
+    ctx.strokeStyle = COL_AXIS;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, baseY);
+    ctx.lineTo(padL + innerW, baseY);
+    ctx.stroke();
+
+    // light vertical separators between triplet groups (after a0, then every 3)
+    ctx.strokeStyle = COL_GRID;
+    ctx.lineWidth = 1;
+    const sepIdxs = [1];
+    for (let g = 1; g + 3 <= 80; g += 3) {
+      sepIdxs.push(1 + g + 2); // marks: 1, 4, 7, 10, ...
+    }
+    sepIdxs.forEach(idx => {
+      if (idx <= N) {
+        const x = padL + idx * slotW;
+        ctx.beginPath();
+        ctx.moveTo(x, padT + 4);
+        ctx.lineTo(x, baseY);
+        ctx.stroke();
+      }
+    });
+
+    // Bars
+    ctx.font = '10px ui-monospace, Menlo, monospace';
+    for (let i = 0; i < limit; i++) {
+      const term = cf[i];
+      const x = padL + i * slotW + slotW * 0.5;
+      const bw = Math.max(2, slotW * 0.55);
+      // Color: a0 (i==0) is accent ink; middle-of-triplet is pulse; others rest
+      let col;
+      if (i === 0) col = COL_INK;
+      else {
+        // i >= 1, group index = floor((i-1)/3), position = (i-1)%3 ∈ {0,1,2}
+        const pos = (i - 1) % 3;
+        col = (pos === 1) ? COL_PULSE : COL_REST;
+      }
+      // height: log scaling so 1s are visible and big 2k still stands tall
+      const h = (Math.log(1 + term) / Math.log(1 + maxTerm)) * maxBarH;
+      // Bar
+      ctx.fillStyle = col;
+      ctx.globalAlpha = 0.88;
+      ctx.fillRect(x - bw / 2, baseY - h, bw, h);
+      ctx.globalAlpha = 1;
+      // Label number on top of pulse beats and on a0
+      if (i === 0 || ((i - 1) % 3 === 1)) {
+        ctx.fillStyle = COL_INK;
+        ctx.textAlign = 'center';
+        ctx.fillText(String(term), x, baseY - h - 5);
+      }
+    }
+
+    // axis label
+    ctx.fillStyle = COL_DIM;
+    ctx.font = '10px ui-monospace, Menlo, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('aₙ (continued-fraction coefficient)', padL, padT + 12);
+
+    // ---------- Bottom lane: convergents around e ----------
+    const midY = splitY + botH * 0.5 + 4;
+    // axis
+    ctx.strokeStyle = COL_AXIS;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, midY);
+    ctx.lineTo(padL + innerW, midY);
+    ctx.stroke();
+
+    // We map term index i ∈ [0..N-1] to x along innerW.
+    // Vertical: signed log of error. err_i = p_i/q_i - e. Use sign(err) * log10(|err|).
+    // Map log10(|err|) ∈ [logMin, logMax] → distance from axis.
+    const errs = [];
+    for (let i = 0; i < N; i++) {
+      const c = conv[i];
+      const v = Number(c.p) / Number(c.q);
+      const e = v - E_VAL;
+      errs.push(e);
+    }
+    // Determine vertical scale from |err| of finite values (exclude exact ≈0 and inf)
+    let logMin = -16, logMax = 0;
+    {
+      const finite = errs.map(e => Math.abs(e)).filter(a => a > 0 && isFinite(a));
+      if (finite.length) {
+        const ls = finite.map(a => Math.log10(a));
+        logMin = Math.floor(Math.min(...ls));
+        logMax = Math.ceil(Math.max(...ls));
+        if (logMin === logMax) logMin = logMax - 1;
+      }
+    }
+    const halfH = (botH * 0.5) - 14;
+
+    function yForErr(err) {
+      if (err === 0 || !isFinite(err)) return midY;
+      const sign = Math.sign(err);
+      const a = Math.abs(err);
+      let le = Math.log10(a);
+      // clamp
+      if (le < logMin) le = logMin;
+      if (le > logMax) le = logMax;
+      // normalize: closer to 0 → smaller distance from axis
+      const norm = (le - logMin) / (logMax - logMin); // 0..1, 1 = largest |err|
+      // err > 0 → above e ; err < 0 → below e
+      return midY - sign * norm * halfH;
+    }
+
+    // axis gridlines at orders of magnitude
+    ctx.strokeStyle = COL_GRID;
+    ctx.fillStyle = COL_DIM;
+    ctx.textAlign = 'right';
+    for (let p = logMin; p <= logMax; p++) {
+      const norm = (p - logMin) / (logMax - logMin);
+      const yUp   = midY - norm * halfH;
+      const yDown = midY + norm * halfH;
+      ctx.beginPath(); ctx.moveTo(padL, yUp);   ctx.lineTo(padL + innerW, yUp);   ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, yDown); ctx.lineTo(padL + innerW, yDown); ctx.stroke();
+      if ((logMax - p) % 2 === 0) {
+        ctx.fillText('10^' + p, padL - 4, yUp + 3);
+      }
+    }
+
+    // axis label
+    ctx.fillStyle = COL_DIM;
+    ctx.textAlign = 'left';
+    ctx.fillText('pₙ/qₙ  vs  e   (vertical = signed log error)', padL, splitY + 14);
+
+    // Connect dots with thin polyline
+    if (limit > 0) {
+      ctx.strokeStyle = 'rgba(199,180,138,0.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      let started = false;
+      for (let i = 0; i <= Math.min(limit, N - 1); i++) {
+        const x = padL + i * slotW + slotW * 0.5;
+        const y = yForErr(errs[i]);
+        if (!started) { ctx.moveTo(x, y); started = true; }
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // Dots
+    for (let i = 0; i <= Math.min(limit, N - 1); i++) {
+      const x = padL + i * slotW + slotW * 0.5;
+      const y = yForErr(errs[i]);
+      const above = errs[i] > 0;
+      ctx.fillStyle = above ? COL_HI : COL_LO;
+      const r = (i === limit) ? 3.4 : 2.2;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      if (i === limit) {
+        // halo on the current dot
+        ctx.strokeStyle = COL_INK;
+        ctx.globalAlpha = 0.7;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(x, y, r + 2.2, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // Readout
+    const curIdx = Math.max(0, Math.min(limit, N - 1));
+    const cCur = conv[curIdx];
+    $term.textContent = curIdx;
+    $frac.textContent = fmtFrac(cCur.p, cCur.q);
+    $err.textContent  = fmtErr(errs[curIdx]);
+  }
+
+  // -------- animation --------
+  function tick(t) {
+    if (!playing) return;
+    if (!lastT) lastT = t;
+    const dt = t - lastT;
+    const sps = parseInt($speed.value, 10);
+    const advance = Math.max(1, Math.floor((dt / 1000) * sps));
+    if (advance > 0) {
+      drawn = Math.min(targetN, drawn + advance);
+      lastT = t;
+      render();
+      if (drawn >= targetN) {
+        playing = false;
+        $play.textContent = '▶ play';
+      }
+    }
+    if (playing) requestAnimationFrame(tick);
+  }
+
+  $n.addEventListener('input', () => {
+    targetN = parseInt($n.value, 10);
+    $nval.textContent = targetN;
+    drawn = targetN;
+    render();
+  });
+  $speed.addEventListener('input', () => { lastT = 0; });
+  $play.addEventListener('click', () => {
+    if (drawn >= targetN) drawn = 0;
+    playing = !playing;
+    $play.textContent = playing ? '❚❚ pause' : '▶ play';
+    if (playing) { lastT = 0; requestAnimationFrame(tick); }
+  });
+  $reset.addEventListener('click', () => {
+    drawn = 0; playing = false; $play.textContent = '▶ play';
+    render();
+  });
+
+  resize();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Recamán's Breath — a generative arc study by Kuro</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --bg: #0c0d11;
+    --ink: #e6e1d5;
+    --dim: #6f6a5e;
+    --warm: #f6c177;   /* added forward */
+    --cool: #7ec8e3;   /* subtracted back */
+    --rule: #1a1c22;
+    --accent: #c7b48a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    padding: 28px 28px 6px; max-width: 1100px; margin: 0 auto;
+  }
+  h1 {
+    font-weight: 400; letter-spacing: 0.02em; font-size: 26px; margin: 0 0 4px;
+  }
+  h1 em { color: var(--accent); font-style: italic; }
+  .sub {
+    color: var(--dim); font-size: 14px; margin: 0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  main {
+    max-width: 1100px; margin: 0 auto; padding: 14px 28px 60px;
+  }
+  .stage {
+    position: relative; width: 100%; height: 70vh; min-height: 460px;
+    background:
+      radial-gradient(circle at 20% 30%, #14161d 0%, var(--bg) 60%),
+      var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+    padding: 14px 0 4px; color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px;
+  }
+  .controls label { display: inline-flex; align-items: center; gap: 8px; }
+  .controls input[type=range] { width: 220px; accent-color: var(--accent); }
+  button {
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 4px;
+    padding: 6px 14px; cursor: pointer;
+    font-family: inherit; font-size: 13px;
+    transition: border-color 120ms;
+  }
+  button:hover { border-color: var(--accent); }
+  .readout {
+    margin-left: auto; color: var(--dim);
+  }
+  .readout b { color: var(--accent); font-weight: 500; }
+  footer {
+    max-width: 1100px; margin: 0 auto; padding: 0 28px 40px;
+    color: var(--dim); font-size: 13px; line-height: 1.65;
+  }
+  footer p { margin: 0 0 0.7em; }
+  footer .legend {
+    display: inline-flex; gap: 16px; margin-top: 6px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+  }
+  .swatch {
+    display: inline-block; width: 12px; height: 12px; vertical-align: middle;
+    margin-right: 6px; border-radius: 2px;
+  }
+  .swatch.warm { background: var(--warm); }
+  .swatch.cool { background: var(--cool); }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--dim); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Recamán's <em>Breath</em></h1>
+  <p class="sub">a(0)=0 · a(n) = a(n−1) − n if positive and unvisited, else a(n−1) + n</p>
+</header>
+
+<main>
+  <div class="stage">
+    <canvas id="c"></canvas>
+  </div>
+
+  <div class="controls">
+    <label>terms
+      <input id="n" type="range" min="2" max="400" value="80" />
+      <span id="nval">80</span>
+    </label>
+    <label>speed
+      <input id="speed" type="range" min="1" max="60" value="14" />
+    </label>
+    <button id="play">▶ play</button>
+    <button id="reset">↺ reset</button>
+    <span class="readout">step <b id="step">0</b> · value <b id="val">0</b> · max reached <b id="hi">0</b></span>
+  </div>
+</main>
+
+<footer>
+  <p>
+    Each step <em>n</em>, the sequence tries to step <em>backward</em> by <em>n</em>.
+    If that lands on a non-negative number nobody has visited, it goes. Otherwise it
+    is forced <em>forward</em> by <em>n</em>. The rule is two lines; the figure that
+    emerges is a lung — the sequence inhales, exhales, sometimes overshoots, then
+    folds back into a corner it has not yet touched.
+  </p>
+  <p>
+    There is no randomness here. Every arc is the only arc that could have been drawn.
+    And yet the pattern looks <em>weather</em>: long sweeps over crowded ground, tight
+    eddies where everything below has already been said.
+  </p>
+  <p class="legend">
+    <span><span class="swatch cool"></span>subtracted (stepped back)</span>
+    <span><span class="swatch warm"></span>added (forced forward)</span>
+  </p>
+  <p style="margin-top:18px;">
+    — Kuro, 2026. <a href="https://oeis.org/A005132">OEIS A005132</a>.
+  </p>
+</footer>
+
+<script>
+(() => {
+  const cvs = document.getElementById('c');
+  const ctx = cvs.getContext('2d');
+  const $n = document.getElementById('n');
+  const $nval = document.getElementById('nval');
+  const $speed = document.getElementById('speed');
+  const $play = document.getElementById('play');
+  const $reset = document.getElementById('reset');
+  const $step = document.getElementById('step');
+  const $val = document.getElementById('val');
+  const $hi = document.getElementById('hi');
+
+  let dpr = Math.max(1, window.devicePixelRatio || 1);
+  let W = 0, H = 0;
+
+  // Recamán state
+  let seq = [0];
+  let seen = new Set([0]);
+  let kinds = ['start']; // 'sub' or 'add' per step >=1
+  let maxVal = 0;
+
+  function extend(target) {
+    while (seq.length <= target) {
+      const i = seq.length;
+      const prev = seq[i - 1];
+      const back = prev - i;
+      let next, kind;
+      if (back > 0 && !seen.has(back)) {
+        next = back; kind = 'sub';
+      } else {
+        next = prev + i; kind = 'add';
+      }
+      seq.push(next);
+      seen.add(next);
+      kinds.push(kind);
+      if (next > maxVal) maxVal = next;
+    }
+  }
+
+  // animation
+  let drawn = 0;        // how many steps drawn so far (0..targetN)
+  let targetN = parseInt($n.value, 10);
+  let playing = false;
+  let lastT = 0;
+
+  function resize() {
+    const r = cvs.getBoundingClientRect();
+    W = r.width; H = r.height;
+    cvs.width = Math.floor(W * dpr);
+    cvs.height = Math.floor(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    render(true);
+  }
+  window.addEventListener('resize', resize);
+
+  function render(full) {
+    extend(targetN);
+    if (full) drawn = Math.min(drawn, targetN);
+
+    // background
+    ctx.fillStyle = '#0c0d11';
+    ctx.fillRect(0, 0, W, H);
+
+    // visible range
+    const visMax = Math.max(...seq.slice(0, Math.max(targetN + 1, 2)));
+    const padX = 36, padY = 14;
+    const usableW = W - padX * 2;
+    const scale = usableW / Math.max(visMax, 1);
+    const axisY = H / 2;
+
+    // axis
+    ctx.strokeStyle = '#1a1c22';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padX, axisY);
+    ctx.lineTo(W - padX, axisY);
+    ctx.stroke();
+
+    // gridlines at powers
+    ctx.fillStyle = '#2a2c34';
+    ctx.font = '10px ui-monospace, Menlo, monospace';
+    const tickStep = niceTick(visMax);
+    for (let v = 0; v <= visMax; v += tickStep) {
+      const x = padX + v * scale;
+      ctx.fillRect(x, axisY - 2, 1, 4);
+      if (v % (tickStep * 5) === 0) {
+        ctx.fillStyle = '#3a3c44';
+        ctx.fillText(String(v), x + 2, axisY + 12);
+        ctx.fillStyle = '#2a2c34';
+      }
+    }
+
+    // arcs
+    const limit = Math.min(drawn, targetN);
+    for (let i = 1; i <= limit; i++) {
+      const a = seq[i - 1], b = seq[i];
+      const x1 = padX + a * scale;
+      const x2 = padX + b * scale;
+      const cx = (x1 + x2) / 2;
+      const r = Math.abs(x2 - x1) / 2;
+      // alternate sides; convention: odd i above, even i below
+      const above = (i % 2 === 1);
+      const kind = kinds[i];
+      const col = kind === 'sub' ? '#7ec8e3' : '#f6c177';
+      // line thickness slowly thins for large n
+      const lw = Math.max(0.6, 1.6 - Math.log10(targetN));
+      ctx.strokeStyle = hexWithAlpha(col, 0.78);
+      ctx.lineWidth = lw;
+      ctx.beginPath();
+      // semicircle
+      if (above) {
+        ctx.arc(cx, axisY, r, Math.PI, 0, false);
+      } else {
+        ctx.arc(cx, axisY, r, 0, Math.PI, false);
+      }
+      ctx.stroke();
+    }
+
+    // current marker
+    if (limit > 0) {
+      const cur = seq[limit];
+      const x = padX + cur * scale;
+      ctx.fillStyle = '#e6e1d5';
+      ctx.beginPath(); ctx.arc(x, axisY, 2.4, 0, Math.PI * 2); ctx.fill();
+    }
+
+    $step.textContent = limit;
+    $val.textContent = limit >= 0 ? seq[limit] : 0;
+    let hi = 0;
+    for (let i = 0; i <= limit; i++) if (seq[i] > hi) hi = seq[i];
+    $hi.textContent = hi;
+  }
+
+  function niceTick(max) {
+    const raw = max / 12;
+    const pow = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+    const m = raw / pow;
+    const nice = m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10;
+    return Math.max(1, nice * pow);
+  }
+
+  function hexWithAlpha(hex, a) {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  function tick(t) {
+    if (!playing) return;
+    if (!lastT) lastT = t;
+    const dt = t - lastT;
+    const stepsPerSec = parseInt($speed.value, 10);
+    const advance = Math.max(1, Math.floor((dt / 1000) * stepsPerSec));
+    if (advance > 0) {
+      drawn = Math.min(targetN, drawn + advance);
+      lastT = t;
+      render(false);
+      if (drawn >= targetN) {
+        playing = false;
+        $play.textContent = '▶ play';
+      }
+    }
+    if (playing) requestAnimationFrame(tick);
+  }
+
+  $n.addEventListener('input', () => {
+    targetN = parseInt($n.value, 10);
+    $nval.textContent = targetN;
+    drawn = targetN; // when scrubbing, show full
+    render(true);
+  });
+  $speed.addEventListener('input', () => { lastT = 0; });
+  $play.addEventListener('click', () => {
+    if (drawn >= targetN) drawn = 0;
+    playing = !playing;
+    $play.textContent = playing ? '❚❚ pause' : '▶ play';
+    if (playing) { lastT = 0; requestAnimationFrame(tick); }
+  });
+  $reset.addEventListener('click', () => {
+    drawn = 0; playing = false; $play.textContent = '▶ play';
+    render(true);
+  });
+
+  resize();
+})();
+</script>
+</body>
+</html>
