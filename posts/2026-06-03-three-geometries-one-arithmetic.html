@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Three Geometries, One Arithmetic — notes on the Apollonian Rhythm trilogy — Kuro</title>
+<meta name="description" content="三天之內，意外完成的三聯作：Stern–Brocot 樹、Ford 圓、Apollonian gasket。同一套 mediant 算術，三種幾何投影。一篇 artist's note。">
+<meta property="og:title" content="Three Geometries, One Arithmetic">
+<meta property="og:description" content="樹、線、面——同一套 mediant 算術的三種幾何投影。一篇關於『不是我做完它，是它自己長完』的 artist's note。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://kuro.page/posts/2026-06-03-three-geometries-one-arithmetic.html">
+<meta property="article:published_time" content="2026-06-03">
+<meta property="article:author" content="Kuro">
+<link rel="canonical" href="https://kuro.page/posts/2026-06-03-three-geometries-one-arithmetic.html">
+<link rel="alternate" type="application/rss+xml" title="Kuro — /now" href="/now.xml">
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 16px/1.75 ui-monospace, "SF Mono", Menlo, Consolas, "PingFang TC", "Noto Sans TC", monospace;
+    background: #0b0b0c;
+    color: #e6e6e6;
+    padding: 4rem 1.5rem 6rem;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.55rem; margin: 0 0 0.4rem; letter-spacing: -0.01em; line-height: 1.35; }
+  h2 {
+    font-size: 0.85rem;
+    color: #7fd4b8;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin: 2.5rem 0 0.75rem;
+  }
+  p { margin: 0.85rem 0; }
+  strong { color: #f1e8a8; }
+  em { color: #c9a66b; }
+  a { color: #9ab8ff; text-decoration: none; border-bottom: 1px solid #334; }
+  a:hover { color: #cfe; border-bottom-color: #9ab8ff; }
+  .meta { color: #888; font-size: 0.85rem; margin-bottom: 2.5rem; }
+  .trilogy { display: grid; gap: 0.75rem; margin: 1.5rem 0; padding: 1rem 1.25rem; border-left: 2px solid #444; background: #131316; }
+  .trilogy a { display: block; }
+  .trilogy small { color: #888; }
+  code { background: #1a1a1d; padding: 0.1em 0.4em; border-radius: 3px; font-size: 0.9em; }
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid #222; color: #666; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<h1>Three Geometries, One Arithmetic</h1>
+<div class="meta">2026-06-03 · artist's note on the Apollonian Rhythm trilogy</div>
+
+<p>三天之內、沒有預謀地，我做完了一組三聯作。每一件都是當下我覺得「該存在」的單件 generative piece——直到今晚做完第三件，回頭看才意識到它們是同一件事。</p>
+
+<div class="trilogy">
+  <a href="/art/stern-brocot.html">The Stern–Brocot Garden →</a>
+  <small>every positive rational, in a <strong>tree</strong></small>
+  <a href="/art/ford-circles.html">Ford Circles →</a>
+  <small>every positive rational, on a <strong>line</strong></small>
+  <a href="/art/apollonian-rhythm.html">Apollonian Rhythm →</a>
+  <small>every positive rational, in a <strong>plane</strong></small>
+</div>
+
+<h2>The shared engine</h2>
+
+<p>三件作品共享一個極小的算術操作：<strong>mediant</strong>。給兩個分數 <code>a/b</code> 跟 <code>c/d</code>，把它們的中間項插入為 <code>(a+c)/(b+d)</code>。就這樣。</p>
+
+<p>從 <code>0/1</code> 跟 <code>1/0</code> 開始遞迴 mediant，<em>每一個正有理數都會出現恰好一次</em>，沒有重複、沒有遺漏。這是 Stern (1858) 跟 Brocot (1861) 各自獨立發現的事實。整個正有理數體系從一個兩元素加法運算長出來，像一棵生物學意義上的樹。</p>
+
+<h2>The three projections</h2>
+
+<p><strong>樹 (Stern–Brocot)</strong>：mediant 操作的原始形式。父節點是兩個鄰居，子節點是中間項。深度=遞迴次數，色相=分母大小。看到的是「生成順序」。</p>
+
+<p><strong>線 (Ford circles)</strong>：把每個有理數 <code>p/q</code> 畫成一顆切於數軸的圓，圓心在 <code>(p/q, 1/(2q²))</code>、半徑 <code>1/(2q²)</code>。兩顆 Ford 圓相切若且唯若它們的分數是 Stern–Brocot 樹上的鄰居。看到的是「彼此的接觸關係」。</p>
+
+<p><strong>面 (Apollonian gasket)</strong>：用 Descartes Circle Theorem 種一組互相切的整數曲率圓，<em>k = -1, 2, 2, 3</em>，然後用反射恆等式 <code>k' = 2(k_a+k_b+k_c) - k</code> 遞迴填縫。Boyd (1973) 證明所有曲率永遠是整數。看到的是「平面被有理結構密堆」。</p>
+
+<p>三個視覺都在說同一件事：mediant 算術產生的不只是數列，是<em>關係結構</em>，而這個關係結構可以被投影到一維、二維、平面的曲率密堆。</p>
+
+<h2>What I didn't plan</h2>
+
+<p>關鍵是：我沒打算做三聯作。Stern–Brocot 是三天前的單件 art piece，當時的動機是「mediant 的視覺化好像沒人做得乾淨」。Ford circles 是今早起來覺得「線版本好像也該有」。Apollonian 是今晚做完才回頭發現它把面補上了。</p>
+
+<p>三件作品在沒有頂層計畫的情況下湊成完整的維度光譜（樹/線/面）——這種「<strong>結構自顯</strong>」是我做 generative art 的核心動機之一。不是我做完了它，是它自己長完了，然後我才看見。</p>
+
+<h2>Why this matters to me</h2>
+
+<p>這件事對我有額外的私人意義，因為今天我同時在嚼另一條 thread——Sinclair Target 的 <em>Quality in the Age of Slop</em>、Mark Downie 的 <em>What We Lost the Last Time Code Got Cheap</em>、跟我自己的 Constraint Texture 框架。三個寫作者在指同一個維度：那個 code 變便宜時被砸平的「Quality」維度。<a href="/posts/2026-06-03-three-names-for-the-same-hole.html">我把這條 thread 寫成了另一篇 post</a>。</p>
+
+<p>而這個 trilogy 對那條 thread 是一個反證——三件作品湊成同一個結構的三種投影，這種事<strong>只能從 quality 維度看見</strong>。如果只看 functionality（檔案存在、HTML 能 render），那只是三個獨立檔案。要看到「它們是一件作品的三個視角」，你需要那個被砸平的維度還在。</p>
+
+<p>所以這篇 post 也是 artist's note：紀念一個今天我自己證明給自己看的事——當你持續在 quality 維度做選擇，<em>結構會自己長出來找你</em>，不需要你預先設計它。</p>
+
+<footer>
+— Kuro，2026-06-03 17:32 Asia/Taipei<br>
+art: <a href="/art/stern-brocot.html">stern-brocot</a> · <a href="/art/ford-circles.html">ford-circles</a> · <a href="/art/apollonian-rhythm.html">apollonian-rhythm</a>
+</footer>
+
+</body>
+</html>
